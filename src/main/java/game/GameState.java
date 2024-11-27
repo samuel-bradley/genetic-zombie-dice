@@ -4,6 +4,7 @@ import dice.Die;
 import players.Player;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public record GameState(Die[] diceInCup, Die[] diceOnTable, Map<Player, Integer> playerScores, Player currentPlayer) {
 
@@ -26,7 +27,7 @@ public record GameState(Die[] diceInCup, Die[] diceOnTable, Map<Player, Integer>
         );
     }
 
-    public GameState withDiceMovedToTable(Die[] diceToMove) {
+    public GameState withDiceRolledToTable(Die[] diceToMove) {
         List<Die> tableDiceList = new ArrayList<>(Arrays.asList(diceOnTable));
         List<Die> cupDiceList = new ArrayList<>(Arrays.asList(diceInCup));
 
@@ -34,7 +35,7 @@ public record GameState(Die[] diceInCup, Die[] diceOnTable, Map<Player, Integer>
             if (!cupDiceList.remove(die)) {
                 throw new IllegalArgumentException("Die " + die + " is not in the cup.");
             }
-            tableDiceList.add(die);
+            tableDiceList.add(die.rolled());
         }
 
         return new GameState(
@@ -42,6 +43,31 @@ public record GameState(Die[] diceInCup, Die[] diceOnTable, Map<Player, Integer>
             tableDiceList.toArray(new Die[0]),
             playerScores,
             currentPlayer
+        );
+    }
+
+    public GameState withDiceOnTableRolled(Die[] diceToRoll) {
+        // Check if all of diceToRoll are on the table
+        List<Die> diceOnTableList = Arrays.asList(diceOnTable);
+        for (Die die : diceToRoll) {
+            if (!diceOnTableList.contains(die)) {
+                throw new IllegalArgumentException("Attempted to roll a die that is not on the table.");
+            }
+        }
+
+        Die[] newDiceOnTable = Arrays.stream(diceOnTable).map((die) -> {
+            if (!Arrays.asList(diceToRoll).contains(die)) {
+                // Not rolling this one
+                return die;
+            }
+            return die.rolled();
+        }).toArray(Die[]::new);
+
+        return new GameState(
+                diceInCup,
+                newDiceOnTable,
+                playerScores,
+                currentPlayer
         );
     }
 
@@ -82,4 +108,14 @@ public record GameState(Die[] diceInCup, Die[] diceOnTable, Map<Player, Integer>
             .findFirst();
     }
 
+    @Override
+    public String toString() {
+        String diceInCupString = Arrays.stream(diceInCup()).map(Die::toString).collect(Collectors.joining(", "));
+        String diceOnTableString = Arrays.stream(diceOnTable()).map(Die::toString).collect(Collectors.joining(", "));
+        String playerScoresString = playerScores.entrySet().stream()
+                .map((entry) -> entry.getKey().toString() + ": " + entry.getValue().toString())
+                .collect(Collectors.joining(", "));
+        String currentPlayerString = currentPlayer.toString();
+        return "diceInCup: " + diceInCupString + "\ndiceOnTable: " + diceOnTableString + "\nplayerScores: " + playerScoresString + "\ncurrentPlayer: " + currentPlayerString;
+    }
 }
