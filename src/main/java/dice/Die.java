@@ -1,20 +1,35 @@
 package dice;
 
-import static dice.DieFace.*;
+import java.util.Optional;
+import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
 
-public enum Die {
+public class Die {
 
-    RED(new DieFace[]{BLAST, BLAST, BLAST, FOOTSTEPS, FOOTSTEPS, BRAIN}),
-    YELLOW(new DieFace[]{BLAST, BLAST, FOOTSTEPS, FOOTSTEPS, BRAIN, BRAIN}),
-    GREEN(new DieFace[]{BLAST, FOOTSTEPS, FOOTSTEPS, BRAIN, BRAIN, BRAIN});
+    private final DieColour colour;
+    private final Optional<DieFace> currentFace;
+    private final Random random;
 
-    private final DieFace[] faces;
-
-    Die(DieFace[] faces) {
-        this.faces = faces;
+    public Die(DieColour colour, Optional<DieFace> currentFace) {
+        this(colour, currentFace, ThreadLocalRandom.current());
     }
 
-    public DieFace[] getFaces() {
-        return faces;
+    public Die(DieColour colour, Optional<DieFace> currentFace, Random random) {
+        this.colour = colour;
+        this.currentFace = currentFace;
+        this.random = random;
+    }
+
+    public DieColour getColour() {
+        return colour;
+    }
+
+    public Optional<DieFace> getCurrentFace() {
+        return currentFace;
+    }
+
+    public Die rolled() {
+        final int faceIndex = random.nextInt(0, colour.getFaces().length);
+        return new Die(colour, Optional.of(colour.getFaces()[faceIndex]), random);
     }
 }
