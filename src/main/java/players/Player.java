@@ -1,7 +1,7 @@
 package players;
 
-import game.GameState;
+import game.DecisionRelevantGameState;
 
 public interface Player {
-    boolean rollAgain(GameState gameState);
+    boolean rollAgain(DecisionRelevantGameState gameState);
 }
