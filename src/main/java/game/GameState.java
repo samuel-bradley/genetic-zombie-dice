@@ -6,7 +6,16 @@ import players.Player;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static game.GameOperations.getRandomPlayer;
+
 public record GameState(Die[] diceInCup, Die[] diceOnTable, Map<Player, Integer> playerScores, Player currentPlayer) {
+
+    public static GameState makeInitialState(Player[] players, Die[] dice) {
+        // Initialise player scores to zero
+        Map<Player, Integer> playersAndScores = Arrays.stream(players)
+                .collect(Collectors.toMap(p -> p, p -> 0));
+        return new GameState(dice, new Die[0], playersAndScores, getRandomPlayer(players));
+    }
 
     public GameState withDiceMovedToCup(Die[] diceToMove) {
         List<Die> tableDiceList = new ArrayList<>(Arrays.asList(diceOnTable));

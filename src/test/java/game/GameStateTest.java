@@ -22,6 +22,14 @@ class GameStateTest {
     Player player2 = new RandomPlayer();
 
     @Test
+    void makesInitialState() {
+        GameState state = GameState.makeInitialState(new Player[]{player1, player2}, new Die[]{die1, die2, die3, die4});
+        assertArrayEquals(new Die[]{die1, die2, die3, die4}, state.diceInCup());
+        assertArrayEquals(new Die[]{}, state.diceOnTable());
+        assertEquals(Map.of(player1, 0, player2, 0), state.playerScores());
+    }
+
+    @Test
     void movesDiceToCup() {
         GameState initialGameState = new GameState(
                 new Die[]{die1, die2},
