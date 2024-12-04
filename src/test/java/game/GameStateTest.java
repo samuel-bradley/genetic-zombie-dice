@@ -35,7 +35,9 @@ class GameStateTest {
                 new Die[]{die1, die2},
                 new Die[]{die3, die4},
                 Map.of(player1, 10),
-                player1
+                player1,
+                1,
+                2
         );
 
         GameState updatedGameState = initialGameState.withDiceMovedToCup(new Die[]{die3});
@@ -46,6 +48,9 @@ class GameStateTest {
         assertEquals(initialGameState.playerScores(), updatedGameState.playerScores());
         // Current player stays the same
         assertEquals(initialGameState.currentPlayer(), updatedGameState.currentPlayer());
+        // Blasts and brains this turn stay the same
+        assertEquals(initialGameState.blastsThisTurn(), updatedGameState.blastsThisTurn());
+        assertEquals(initialGameState.brainsThisTurn(), updatedGameState.brainsThisTurn());
     }
 
     @Test
@@ -54,7 +59,9 @@ class GameStateTest {
                 new Die[]{die1, die2},
                 new Die[]{die3, die4},
                 Map.of(player1, 10),
-                player1
+                player1,
+                1,
+                2
         );
 
         assertThrows(IllegalArgumentException.class, () -> gameState.withDiceMovedToCup(new Die[]{die2}));
@@ -66,7 +73,9 @@ class GameStateTest {
                 new Die[]{die1, die2},
                 new Die[]{die3, die4},
                 Map.of(player1, 10),
-                player1
+                player1,
+                1,
+                2
         );
 
         GameState updatedGameState = initialGameState.withDiceRolledToTable(new Die[]{die2});
@@ -80,6 +89,9 @@ class GameStateTest {
         assertEquals(initialGameState.playerScores(), updatedGameState.playerScores());
         // Current player stays the same
         assertEquals(initialGameState.currentPlayer(), updatedGameState.currentPlayer());
+        // Blasts and brains this turn stay the same
+        assertEquals(initialGameState.blastsThisTurn(), updatedGameState.blastsThisTurn());
+        assertEquals(initialGameState.brainsThisTurn(), updatedGameState.brainsThisTurn());
     }
 
     @Test
@@ -88,7 +100,9 @@ class GameStateTest {
                 new Die[]{die1, die2},
                 new Die[]{die3, die4},
                 Map.of(player1, 10),
-                player1
+                player1,
+                1,
+                2
         );
 
         assertThrows(IllegalArgumentException.class, () -> gameState.withDiceRolledToTable(new Die[]{die3}));
@@ -100,7 +114,9 @@ class GameStateTest {
                 new Die[]{die1, die2},
                 new Die[]{die3, die4},
                 Map.of(player1, 10),
-                player1
+                player1,
+                1,
+                2
         );
 
         GameState updatedGameState = initialGameState.withDiceOnTableRolled(new Die[]{die3});
@@ -117,6 +133,9 @@ class GameStateTest {
         assertEquals(initialGameState.playerScores(), updatedGameState.playerScores());
         // Current player stays the same
         assertEquals(initialGameState.currentPlayer(), updatedGameState.currentPlayer());
+        // Blasts and brains this turn stay the same
+        assertEquals(initialGameState.blastsThisTurn(), updatedGameState.blastsThisTurn());
+        assertEquals(initialGameState.brainsThisTurn(), updatedGameState.brainsThisTurn());
     }
 
     @Test
@@ -125,7 +144,9 @@ class GameStateTest {
                 new Die[]{die1, die2},
                 new Die[]{die3, die4},
                 Map.of(player1, 10),
-                player1
+                player1,
+                1,
+                2
         );
 
         assertThrows(IllegalArgumentException.class, () -> gameState.withDiceOnTableRolled(new Die[]{die2}));
@@ -137,7 +158,9 @@ class GameStateTest {
                 new Die[]{die1, die2},
                 new Die[]{die3, die4},
                 Map.of(player1, 10),
-                player1
+                player1,
+                1,
+                2
         );
 
         GameState updatedGameState = initialGameState.withPlayerScoreAdded(player1, 5);
@@ -149,6 +172,9 @@ class GameStateTest {
         assertArrayEquals(new Die[]{die3, die4}, updatedGameState.diceOnTable());
         // Current player stays the same
         assertEquals(initialGameState.currentPlayer(), updatedGameState.currentPlayer());
+        // Blasts and brains this turn stay the same
+        assertEquals(initialGameState.blastsThisTurn(), updatedGameState.blastsThisTurn());
+        assertEquals(initialGameState.brainsThisTurn(), updatedGameState.brainsThisTurn());
     }
 
     @Test
@@ -157,7 +183,9 @@ class GameStateTest {
                 new Die[]{die1, die2},
                 new Die[]{die3, die4},
                 Map.of(),
-                player1
+                player1,
+                1,
+                2
         );
 
         assertThrows(IllegalArgumentException.class, () -> gameState.withPlayerScoreAdded(player1, 5));
@@ -169,7 +197,9 @@ class GameStateTest {
                 new Die[]{die1, die2},
                 new Die[]{die3, die4},
                 Map.of(player1, 10, player2, 5),
-                player1
+                player1,
+                1,
+                2
         );
 
         GameState updatedGameState = initialGameState.withCurrentPlayer(player2);
@@ -181,6 +211,9 @@ class GameStateTest {
         assertArrayEquals(new Die[]{die3, die4}, updatedGameState.diceOnTable());
         // Player scores stay the same
         assertEquals(initialGameState.playerScores(), updatedGameState.playerScores());
+        // Blasts and brains this turn stay the same
+        assertEquals(initialGameState.blastsThisTurn(), updatedGameState.blastsThisTurn());
+        assertEquals(initialGameState.brainsThisTurn(), updatedGameState.brainsThisTurn());
     }
 
     @Test
@@ -189,10 +222,64 @@ class GameStateTest {
                 new Die[]{die1, die2},
                 new Die[]{die3, die4},
                 Map.of(player1, 10),
-                player1
+                player1,
+                1,
+                2
         );
 
         assertThrows(IllegalArgumentException.class, () -> gameState.withCurrentPlayer(player2));
+    }
+
+    @Test
+    void updatesBlastsThisTurn() {
+        GameState initialGameState = new GameState(
+                new Die[]{die1, die2},
+                new Die[]{die3, die4},
+                Map.of(player1, 10, player2, 14),
+                player1,
+                1,
+                2
+        );
+
+        GameState updatedGameState = initialGameState.withBlastsThisTurn(3);
+
+        assertEquals(3, updatedGameState.blastsThisTurn());
+        // Brains this turn stays the same
+        assertEquals(2, updatedGameState.brainsThisTurn());
+        // Dice in cup stay the same
+        assertArrayEquals(new Die[]{die1, die2}, updatedGameState.diceInCup());
+        // Dice on table stay the same
+        assertArrayEquals(new Die[]{die3, die4}, updatedGameState.diceOnTable());
+        // Player scores stay the same
+        assertEquals(initialGameState.playerScores(), updatedGameState.playerScores());
+        // Current player stays the same
+        assertEquals(initialGameState.currentPlayer(), updatedGameState.currentPlayer());
+    }
+
+    @Test
+    void updatesBrainsThisTurn() {
+        GameState initialGameState = new GameState(
+                new Die[]{die1, die2},
+                new Die[]{die3, die4},
+                Map.of(player1, 10, player2, 14),
+                player1,
+                1,
+                2
+        );
+
+        GameState updatedGameState = initialGameState.withBrainsThisTurn(3);
+
+        assertEquals(3, updatedGameState.brainsThisTurn());
+        // Blasts this turn stays the same
+        assertEquals(1, updatedGameState.blastsThisTurn());
+        // Dice in cup stay the same
+        assertArrayEquals(new Die[]{die1, die2}, updatedGameState.diceInCup());
+        // Dice on table stay the same
+        assertArrayEquals(new Die[]{die3, die4}, updatedGameState.diceOnTable());
+        // Player scores stay the same
+        assertEquals(initialGameState.playerScores(), updatedGameState.playerScores());
+        // Current player stays the same
+        assertEquals(initialGameState.currentPlayer(), updatedGameState.currentPlayer());
     }
 
     @Test
@@ -201,7 +288,9 @@ class GameStateTest {
                 new Die[]{die1, die2},
                 new Die[]{die3, die4},
                 Map.of(player1, 10, player2, 14),
-                player1
+                player1,
+                1,
+                2
         );
 
         Optional<Player> winner = gameState.winner();
@@ -216,7 +305,9 @@ class GameStateTest {
                 new Die[]{die1, die2},
                 new Die[]{die3, die4},
                 Map.of(player1, 13, player2, 10),
-                player1
+                player1,
+                1,
+                2
         );
 
         Optional<Player> winner = gameState.winner();
@@ -231,7 +322,9 @@ class GameStateTest {
                 new Die[]{die1, die2},
                 new Die[]{die3, die4},
                 Map.of(player1, 10, player2, 12),
-                player1
+                player1,
+                1,
+                2
         );
 
         Optional<Player> winner = gameState.winner();

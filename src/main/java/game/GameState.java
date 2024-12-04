@@ -8,13 +8,13 @@ import java.util.stream.Collectors;
 
 import static game.GameOperations.getRandomPlayer;
 
-public record GameState(Die[] diceInCup, Die[] diceOnTable, Map<Player, Integer> playerScores, Player currentPlayer) {
+public record GameState(Die[] diceInCup, Die[] diceOnTable, Map<Player, Integer> playerScores, Player currentPlayer, int blastsThisTurn, int brainsThisTurn) {
 
     public static GameState makeInitialState(Player[] players, Die[] dice) {
         // Initialise player scores to zero
         Map<Player, Integer> playersAndScores = Arrays.stream(players)
                 .collect(Collectors.toMap(p -> p, p -> 0));
-        return new GameState(dice, new Die[0], playersAndScores, getRandomPlayer(players));
+        return new GameState(dice, new Die[0], playersAndScores, getRandomPlayer(players), 0, 0);
     }
 
     public GameState withDiceMovedToCup(Die[] diceToMove) {
@@ -32,7 +32,9 @@ public record GameState(Die[] diceInCup, Die[] diceOnTable, Map<Player, Integer>
             cupDiceList.toArray(new Die[0]),
             tableDiceList.toArray(new Die[0]),
             playerScores,
-            currentPlayer
+            currentPlayer,
+            blastsThisTurn,
+            brainsThisTurn
         );
     }
 
@@ -51,7 +53,9 @@ public record GameState(Die[] diceInCup, Die[] diceOnTable, Map<Player, Integer>
             cupDiceList.toArray(new Die[0]),
             tableDiceList.toArray(new Die[0]),
             playerScores,
-            currentPlayer
+            currentPlayer,
+            blastsThisTurn,
+            brainsThisTurn
         );
     }
 
@@ -76,7 +80,9 @@ public record GameState(Die[] diceInCup, Die[] diceOnTable, Map<Player, Integer>
                 diceInCup,
                 newDiceOnTable,
                 playerScores,
-                currentPlayer
+                currentPlayer,
+                blastsThisTurn,
+                brainsThisTurn
         );
     }
 
@@ -93,7 +99,9 @@ public record GameState(Die[] diceInCup, Die[] diceOnTable, Map<Player, Integer>
             diceInCup,
             diceOnTable,
             newScores,
-            currentPlayer
+            currentPlayer,
+            blastsThisTurn,
+            brainsThisTurn
         );
     }
 
@@ -106,8 +114,18 @@ public record GameState(Die[] diceInCup, Die[] diceOnTable, Map<Player, Integer>
             diceInCup,
             diceOnTable,
             playerScores,
-            newCurrentPlayer
+            newCurrentPlayer,
+            blastsThisTurn,
+            brainsThisTurn
         );
+    }
+
+    public GameState withBlastsThisTurn(int newBlastsThisTurn) {
+        return new GameState(diceInCup, diceOnTable, playerScores, currentPlayer, newBlastsThisTurn, brainsThisTurn);
+    }
+
+    public GameState withBrainsThisTurn(int newBrainsThisTurn) {
+        return new GameState(diceInCup, diceOnTable, playerScores, currentPlayer, blastsThisTurn, newBrainsThisTurn);
     }
 
     public Optional<Player> winner() {
