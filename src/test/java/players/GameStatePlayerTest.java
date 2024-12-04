@@ -18,8 +18,8 @@ class GameStatePlayerTest {
     Die die1 = new Die(YELLOW, Optional.of(BRAIN));
     Die die2 = new Die(RED, Optional.of(BLAST));
 
-    DecisionRelevantGameState gameState1 = new DecisionRelevantGameState(new Die[]{die1}, new Die[]{die2});
-    DecisionRelevantGameState gameState2 = new DecisionRelevantGameState(new Die[]{die2}, new Die[]{die1});
+    DecisionRelevantGameState gameState1 = new DecisionRelevantGameState(new Die[]{die1}, new Die[]{die2}, 1, 2);
+    DecisionRelevantGameState gameState2 = new DecisionRelevantGameState(new Die[]{die2}, new Die[]{die1}, 2, 1);
 
     Map<DecisionRelevantGameState, Boolean> gameStatesWithDecisions = Map.of(
             gameState1, true,
@@ -36,13 +36,13 @@ class GameStatePlayerTest {
 
     @Test
     void rollsAgainCorrectlyGivenEquivalentGameState() {
-        assertTrue(player.rollAgain(new DecisionRelevantGameState(new Die[]{die1}, new Die[]{die2})));
-        assertFalse(player.rollAgain(new DecisionRelevantGameState(new Die[]{die2}, new Die[]{die1})));
+        assertTrue(player.rollAgain(new DecisionRelevantGameState(new Die[]{die1}, new Die[]{die2}, 1, 2)));
+        assertFalse(player.rollAgain(new DecisionRelevantGameState(new Die[]{die2}, new Die[]{die1}, 2, 1)));
     }
 
     @Test
     void throwsExceptionGivenUnrecognisedGameState() {
-        DecisionRelevantGameState unknownState = new DecisionRelevantGameState(new Die[]{}, new Die[]{});
+        DecisionRelevantGameState unknownState = new DecisionRelevantGameState(new Die[]{}, new Die[]{}, 1, 2);
         assertThrows(IllegalArgumentException.class, () -> player.rollAgain(unknownState));
     }
 
