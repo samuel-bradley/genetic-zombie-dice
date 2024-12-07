@@ -283,54 +283,58 @@ class GameStateTest {
         assertEquals(initialGameState.currentPlayer(), updatedGameState.currentPlayer());
     }
 
-    @Test
-    void findsWinnerWhenPlayerExceedsWinningScore() {
-        GameState gameState = new GameState(
-                new Die[]{die1, die2},
-                new Die[]{die3, die4},
-                Map.of(player1, 10, player2, 14),
-                player1,
-                1,
-                2
-        );
+    @Nested
+    class WinnerTests {
 
-        Optional<Player> winner = gameState.winner();
+        @Test
+        void findsWinnerWhenPlayerExceedsWinningScore() {
+            GameState gameState = new GameState(
+                    new Die[]{die1, die2},
+                    new Die[]{die3, die4},
+                    Map.of(player1, 10, player2, 14),
+                    player1,
+                    1,
+                    2
+            );
 
-        assertTrue(winner.isPresent());
-        assertEquals(player2, winner.get());
-    }
+            Optional<Player> winner = gameState.winner();
 
-    @Test
-    void findsWinnerWhenPlayerHasWinningScore() {
-        GameState gameState = new GameState(
-                new Die[]{die1, die2},
-                new Die[]{die3, die4},
-                Map.of(player1, 13, player2, 10),
-                player1,
-                1,
-                2
-        );
+            assertTrue(winner.isPresent());
+            assertEquals(player2, winner.get());
+        }
 
-        Optional<Player> winner = gameState.winner();
+        @Test
+        void findsWinnerWhenPlayerHasWinningScore() {
+            GameState gameState = new GameState(
+                    new Die[]{die1, die2},
+                    new Die[]{die3, die4},
+                    Map.of(player1, 13, player2, 10),
+                    player1,
+                    1,
+                    2
+            );
 
-        assertTrue(winner.isPresent());
-        assertEquals(player1, winner.get());
-    }
+            Optional<Player> winner = gameState.winner();
 
-    @Test
-    void doesNotFindWinnerWhenNoPlayerHasWinningScore() {
-        GameState gameState = new GameState(
-                new Die[]{die1, die2},
-                new Die[]{die3, die4},
-                Map.of(player1, 10, player2, 12),
-                player1,
-                1,
-                2
-        );
+            assertTrue(winner.isPresent());
+            assertEquals(player1, winner.get());
+        }
 
-        Optional<Player> winner = gameState.winner();
+        @Test
+        void doesNotFindWinnerWhenNoPlayerHasWinningScore() {
+            GameState gameState = new GameState(
+                    new Die[]{die1, die2},
+                    new Die[]{die3, die4},
+                    Map.of(player1, 10, player2, 12),
+                    player1,
+                    1,
+                    2
+            );
 
-        assertTrue(winner.isEmpty());
+            Optional<Player> winner = gameState.winner();
+
+            assertTrue(winner.isEmpty());
+        }
     }
 
     @Test
