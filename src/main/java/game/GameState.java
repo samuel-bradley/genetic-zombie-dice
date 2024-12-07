@@ -135,6 +135,25 @@ public record GameState(Die[] diceInCup, Die[] diceOnTable, Map<Player, Integer>
             .findFirst();
     }
 
+    public GameState resetForNextTurn() {
+        final Player nextPlayer = getNextPlayer();
+        return withCurrentPlayer(nextPlayer)
+                .withDiceMovedToCup(diceOnTable())
+                .withBrainsThisTurn(0)
+                .withBlastsThisTurn(0);
+    }
+
+    private Player getNextPlayer() {
+        int nextPlayerIndex = (getPlayerIndex(currentPlayer) + 1) % playerScores.size();
+        return (Player) playerScores.keySet().toArray()[nextPlayerIndex];
+    }
+
+    private int getPlayerIndex(Player player) {
+        for (int i = 0; i < playerScores.keySet().toArray().length; i++)
+            if (playerScores.keySet().toArray()[i].equals(player)) return i;
+        throw new IllegalArgumentException("Asked to find a player not in the players array");
+    }
+
     @Override
     public String toString() {
         String diceInCupString = Arrays.stream(diceInCup()).map(Die::toString).collect(Collectors.joining(", "));

@@ -331,4 +331,25 @@ class GameStateTest {
 
         assertTrue(winner.isEmpty());
     }
+
+    @Test
+    void resetsStateForNextTurn() {
+        GameState initialGameState = new GameState(
+                new Die[]{die1, die2},
+                new Die[]{die3, die4},
+                Map.of(player1, 10, player2, 12),
+                player1,
+                1,
+                2
+        );
+
+        GameState resetState = initialGameState.resetForNextTurn();
+
+        assertArrayEquals(new Die[]{die1, die2, die3, die4}, resetState.diceInCup());
+        assertArrayEquals(new Die[]{}, resetState.diceOnTable());
+        assertEquals(initialGameState.playerScores(), resetState.playerScores());
+        assertEquals(player2, resetState.currentPlayer());
+        assertEquals(0, resetState.blastsThisTurn());
+        assertEquals(0, resetState.brainsThisTurn());
+    }
 }
