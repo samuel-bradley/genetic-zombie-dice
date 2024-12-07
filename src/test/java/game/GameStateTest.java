@@ -55,7 +55,7 @@ class GameStateTest {
     }
 
     @Test
-    void throwsExceptionIfMovingNonExistentDiceFromCup() {
+    void throwsExceptionIfMovingNonExistentDiceToCup() {
         GameState gameState = new GameState(
                 new Die[]{die1, die2},
                 new Die[]{die3, die4},
