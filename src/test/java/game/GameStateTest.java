@@ -2,6 +2,7 @@ package game;
 
 import dice.Die;
 import dice.DieColour;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import players.Player;
 import players.RandomPlayer;
@@ -351,5 +352,39 @@ class GameStateTest {
         assertEquals(player2, resetState.currentPlayer());
         assertEquals(0, resetState.blastsThisTurn());
         assertEquals(0, resetState.brainsThisTurn());
+    }
+
+    @Nested
+    class TurnIsOverTests {
+
+        @Test
+        void turnIsOverWhenBlastsIsThree() {
+            GameState gameState = new GameState(new Die[]{}, new Die[]{}, Map.of(player1, 5, player2, 10), player1, 3, 0);
+            assertTrue(gameState.turnIsOver(), "Turn should be over when blasts is 3.");
+        }
+
+        @Test
+        void turnIsOverWhenBlastsExceedsThree() {
+            GameState gameState = new GameState(new Die[]{}, new Die[]{}, Map.of(player1, 5, player2, 10), player1, 4, 0);
+            assertTrue(gameState.turnIsOver(), "Turn should be over when blasts exceeds 3.");
+        }
+
+        @Test
+        void turnIsOverWhenCurrentPlayerScorePlusBrainsIsThirteen() {
+            GameState gameState = new GameState(new Die[]{}, new Die[]{}, Map.of(player1, 10, player2, 10), player1, 2, 3);
+            assertTrue(gameState.turnIsOver(), "Turn should be over when current player score plus brains equals 13.");
+        }
+
+        @Test
+        void turnIsOverWhenCurrentPlayerScorePlusBrainsExceedsThirteen() {
+            GameState gameState = new GameState(new Die[]{}, new Die[]{}, Map.of(player1, 11, player2, 10), player1, 2, 3);
+            assertTrue(gameState.turnIsOver(), "Turn should be over when current player score plus brains exceeds 13.");
+        }
+
+        @Test
+        void turnNotOverWhenBlastsLessThanThreeAndBrainsAndCurrentPlayerScoreLessThanThirteen() {
+            GameState gameState = new GameState(new Die[]{}, new Die[]{}, Map.of(player1, 10, player2, 10), player1, 2, 2);
+            assertFalse(gameState.turnIsOver(), "Turn should not be over when blasts are less than 3 and current player score is less than 13.");
+        }
     }
 }

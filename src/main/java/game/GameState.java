@@ -154,6 +154,11 @@ public record GameState(Die[] diceInCup, Die[] diceOnTable, Map<Player, Integer>
         throw new IllegalArgumentException("Asked to find a player not in the players array");
     }
 
+    public boolean turnIsOver() {
+        int currentPlayerScore = playerScores.get(currentPlayer);
+        return blastsThisTurn >= 3 || currentPlayerScore + brainsThisTurn >= 13;
+    }
+
     @Override
     public String toString() {
         String diceInCupString = Arrays.stream(diceInCup()).map(Die::toString).collect(Collectors.joining(", "));
