@@ -7,7 +7,6 @@ import org.junit.jupiter.api.Test;
 import players.Player;
 import players.RandomPlayer;
 
-import java.util.Arrays;
 import java.util.Map;
 import java.util.Optional;
 
@@ -34,19 +33,69 @@ class GameStateTest {
     class UpdateStateTests {
 
         @Test
-        void addsPlayerScore() {
+        void updatesDiceInCup() {
             GameState initialGameState = new GameState(
                     new Die[]{die1, die2},
                     new Die[]{die3, die4},
-                    Map.of(player1, 10),
+                    Map.of(player1, 10, player2, 5),
                     player1,
                     1,
                     2
             );
 
-            GameState updatedGameState = initialGameState.withPlayerScoreAdded(player1, 5);
+            GameState updatedGameState = initialGameState.withDiceInCup(new Die[]{die1, die2, die3});
 
-            assertEquals(15, updatedGameState.playerScores().get(player1));
+            assertArrayEquals(new Die[]{die1, die2, die3}, updatedGameState.diceInCup());
+            // Dice on table stay the same
+            assertArrayEquals(new Die[]{die3, die4}, updatedGameState.diceOnTable());
+            // Player scores stay the same
+            assertEquals(initialGameState.playerScores(), updatedGameState.playerScores());
+            // Current player stays the same
+            assertEquals(initialGameState.currentPlayer(), updatedGameState.currentPlayer());
+            // Blasts and brains this turn stay the same
+            assertEquals(initialGameState.blastsThisTurn(), updatedGameState.blastsThisTurn());
+            assertEquals(initialGameState.brainsThisTurn(), updatedGameState.brainsThisTurn());
+        }
+
+        @Test
+        void updatesDiceOnTable() {
+            GameState initialGameState = new GameState(
+                    new Die[]{die1, die2},
+                    new Die[]{die3, die4},
+                    Map.of(player1, 10, player2, 5),
+                    player1,
+                    1,
+                    2
+            );
+
+            GameState updatedGameState = initialGameState.withDiceOnTable(new Die[]{die1, die2, die3});
+
+            assertArrayEquals(new Die[]{die1, die2, die3}, updatedGameState.diceOnTable());
+            // Dice in cup stay the same
+            assertArrayEquals(new Die[]{die1, die2}, updatedGameState.diceInCup());
+            // Player scores stay the same
+            assertEquals(initialGameState.playerScores(), updatedGameState.playerScores());
+            // Current player stays the same
+            assertEquals(initialGameState.currentPlayer(), updatedGameState.currentPlayer());
+            // Blasts and brains this turn stay the same
+            assertEquals(initialGameState.blastsThisTurn(), updatedGameState.blastsThisTurn());
+            assertEquals(initialGameState.brainsThisTurn(), updatedGameState.brainsThisTurn());
+        }
+
+        @Test
+        void updatesPlayerScores() {
+            GameState initialGameState = new GameState(
+                    new Die[]{die1, die2},
+                    new Die[]{die3, die4},
+                    Map.of(player1, 10, player2, 5),
+                    player1,
+                    1,
+                    2
+            );
+
+            GameState updatedGameState = initialGameState.withPlayerScores(Map.of(player1, 12, player2, 5));
+
+            assertEquals(Map.of(player1, 12, player2, 5), updatedGameState.playerScores());
             // Dice in cup stay the same
             assertArrayEquals(new Die[]{die1, die2}, updatedGameState.diceInCup());
             // Dice on table stay the same
@@ -56,20 +105,6 @@ class GameStateTest {
             // Blasts and brains this turn stay the same
             assertEquals(initialGameState.blastsThisTurn(), updatedGameState.blastsThisTurn());
             assertEquals(initialGameState.brainsThisTurn(), updatedGameState.brainsThisTurn());
-        }
-
-        @Test
-        void addingPlayerScoreThrowsExceptionIfPlayerNotInGame() {
-            GameState gameState = new GameState(
-                    new Die[]{die1, die2},
-                    new Die[]{die3, die4},
-                    Map.of(),
-                    player1,
-                    1,
-                    2
-            );
-
-            assertThrows(IllegalArgumentException.class, () -> gameState.withPlayerScoreAdded(player1, 5));
         }
 
         @Test
@@ -165,132 +200,6 @@ class GameStateTest {
     }
 
     @Nested
-    class DiceTests {
-        @Test
-        void movesDiceToCup() {
-            GameState initialGameState = new GameState(
-                    new Die[]{die1, die2},
-                    new Die[]{die3, die4},
-                    Map.of(player1, 10),
-                    player1,
-                    1,
-                    2
-            );
-
-            GameState updatedGameState = initialGameState.withDiceMovedToCup(new Die[]{die3});
-
-            assertArrayEquals(new Die[]{die1, die2, die3}, updatedGameState.diceInCup());
-            assertArrayEquals(new Die[]{die4}, updatedGameState.diceOnTable());
-            // Player scores stay the same
-            assertEquals(initialGameState.playerScores(), updatedGameState.playerScores());
-            // Current player stays the same
-            assertEquals(initialGameState.currentPlayer(), updatedGameState.currentPlayer());
-            // Blasts and brains this turn stay the same
-            assertEquals(initialGameState.blastsThisTurn(), updatedGameState.blastsThisTurn());
-            assertEquals(initialGameState.brainsThisTurn(), updatedGameState.brainsThisTurn());
-        }
-
-        @Test
-        void throwsExceptionIfMovingNonExistentDiceToCup() {
-            GameState gameState = new GameState(
-                    new Die[]{die1, die2},
-                    new Die[]{die3, die4},
-                    Map.of(player1, 10),
-                    player1,
-                    1,
-                    2
-            );
-
-            assertThrows(IllegalArgumentException.class, () -> gameState.withDiceMovedToCup(new Die[]{die2}));
-        }
-
-        @Test
-        void rollsDiceToTable() {
-            GameState initialGameState = new GameState(
-                    new Die[]{die1, die2},
-                    new Die[]{die3, die4},
-                    Map.of(player1, 10),
-                    player1,
-                    1,
-                    2
-            );
-
-            GameState updatedGameState = initialGameState.withDiceRolledToTable(new Die[]{die2});
-            DieColour[] updatedDieColoursOnTable = Arrays.stream(updatedGameState.diceOnTable()).map(Die::getColour).toArray(DieColour[]::new);
-
-            assertArrayEquals(new Die[]{die1}, updatedGameState.diceInCup());
-            // Can't assert exact die on table, since it's been rolled
-            assertEquals(3, updatedGameState.diceOnTable().length);
-            assertArrayEquals(new DieColour[]{die3.getColour(), die4.getColour(), die2.getColour()}, updatedDieColoursOnTable);
-            // Player scores stay the same
-            assertEquals(initialGameState.playerScores(), updatedGameState.playerScores());
-            // Current player stays the same
-            assertEquals(initialGameState.currentPlayer(), updatedGameState.currentPlayer());
-            // Blasts and brains this turn stay the same
-            assertEquals(initialGameState.blastsThisTurn(), updatedGameState.blastsThisTurn());
-            assertEquals(initialGameState.brainsThisTurn(), updatedGameState.brainsThisTurn());
-        }
-
-        @Test
-        void throwsExceptionIfDieRolledToTableIsNotInCup() {
-            GameState gameState = new GameState(
-                    new Die[]{die1, die2},
-                    new Die[]{die3, die4},
-                    Map.of(player1, 10),
-                    player1,
-                    1,
-                    2
-            );
-
-            assertThrows(IllegalArgumentException.class, () -> gameState.withDiceRolledToTable(new Die[]{die3}));
-        }
-
-        @Test
-        void rollsDiceOnTable() {
-            GameState initialGameState = new GameState(
-                    new Die[]{die1, die2},
-                    new Die[]{die3, die4},
-                    Map.of(player1, 10),
-                    player1,
-                    1,
-                    2
-            );
-
-            GameState updatedGameState = initialGameState.withDiceOnTableRolled(new Die[]{die3});
-            DieColour[] initialDieColoursOnTable = Arrays.stream(initialGameState.diceOnTable()).map(Die::getColour).toArray(DieColour[]::new);
-            DieColour[] updatedDieColoursOnTable = Arrays.stream(updatedGameState.diceOnTable()).map(Die::getColour).toArray(DieColour[]::new);
-
-            // Can't assert exact dice on table, since one's been rolled
-            assertEquals(2, updatedGameState.diceOnTable().length);
-            assertArrayEquals(initialDieColoursOnTable, updatedDieColoursOnTable);
-            assertTrue(Arrays.asList(updatedGameState.diceOnTable()).contains(die4));
-            // Dice in cup stay the same
-            assertArrayEquals(new Die[]{die1, die2}, updatedGameState.diceInCup());
-            // Player scores stay the same
-            assertEquals(initialGameState.playerScores(), updatedGameState.playerScores());
-            // Current player stays the same
-            assertEquals(initialGameState.currentPlayer(), updatedGameState.currentPlayer());
-            // Blasts and brains this turn stay the same
-            assertEquals(initialGameState.blastsThisTurn(), updatedGameState.blastsThisTurn());
-            assertEquals(initialGameState.brainsThisTurn(), updatedGameState.brainsThisTurn());
-        }
-
-        @Test
-        void throwsExceptionIfDieRolledOnTableIsNotOnTable() {
-            GameState gameState = new GameState(
-                    new Die[]{die1, die2},
-                    new Die[]{die3, die4},
-                    Map.of(player1, 10),
-                    player1,
-                    1,
-                    2
-            );
-
-            assertThrows(IllegalArgumentException.class, () -> gameState.withDiceOnTableRolled(new Die[]{die2}));
-        }
-    }
-
-    @Nested
     class WinnerTests {
 
         @Test
@@ -342,27 +251,6 @@ class GameStateTest {
 
             assertTrue(winner.isEmpty());
         }
-    }
-
-    @Test
-    void resetsStateForNextTurn() {
-        GameState initialGameState = new GameState(
-                new Die[]{die1, die2},
-                new Die[]{die3, die4},
-                Map.of(player1, 10, player2, 12),
-                player1,
-                1,
-                2
-        );
-
-        GameState resetState = initialGameState.resetForNextTurn();
-
-        assertArrayEquals(new Die[]{die1, die2, die3, die4}, resetState.diceInCup());
-        assertArrayEquals(new Die[]{}, resetState.diceOnTable());
-        assertEquals(initialGameState.playerScores(), resetState.playerScores());
-        assertEquals(player2, resetState.currentPlayer());
-        assertEquals(0, resetState.blastsThisTurn());
-        assertEquals(0, resetState.brainsThisTurn());
     }
 
     @Nested
