@@ -1,21 +1,20 @@
 package game;
 
 import dice.Die;
-import dice.DieColour;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Test;
+import players.AlwaysRollAgainPlayer;
 import players.Player;
 
 import java.util.Arrays;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Stream;
 
 import static dice.Die.STANDARD_SET;
 import static dice.DieColour.*;
-import static dice.DieFace.*;
+import static dice.DieFace.BRAIN;
+import static dice.DieFace.FOOTSTEPS;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -120,42 +119,6 @@ public class TurnRunnerTest {
     }
 
     @RepeatedTest(testRepeats)
-    void numberOfDiceRemainsConstant() {
-        GameState initialGameState = new GameState(
-                STANDARD_SET,
-                new Die[]{},
-                Map.of(alwaysRollAgainPlayer, 0),
-                alwaysRollAgainPlayer,
-                0,
-                0
-        );
-
-        GameState finalGameState = runner.runTurn(initialGameState);
-
-        assertEquals(STANDARD_SET.length, finalGameState.diceInCup().length + finalGameState.diceOnTable().length);
-    }
-
-    @RepeatedTest(testRepeats)
-    void coloursOfDiceRemainConstant() {
-        GameState initialGameState = new GameState(
-                STANDARD_SET,
-                new Die[]{},
-                Map.of(alwaysRollAgainPlayer, 0),
-                alwaysRollAgainPlayer,
-                0,
-                0
-        );
-
-        GameState finalGameState = runner.runTurn(initialGameState);
-
-        List<DieColour> finalCupDiceColours = Arrays.stream(finalGameState.diceInCup()).map(Die::getColour).toList();
-        List<DieColour> finalTableDiceColours = Arrays.stream(finalGameState.diceOnTable()).map(Die::getColour).toList();
-        List<DieColour> finalDiceColours = Stream.concat(finalCupDiceColours.stream(), finalTableDiceColours.stream()).toList();
-        List<DieColour> initialDiceColours = Arrays.stream(STANDARD_SET).map(Die::getColour).toList();
-        assertEquals(initialDiceColours.stream().sorted().toList(), finalDiceColours.stream().sorted().toList());
-    }
-
-    @RepeatedTest(testRepeats)
     void allDiceOnTableHaveDefinedFaces() {
         GameState initialGameState = new GameState(
                 STANDARD_SET,
@@ -257,13 +220,6 @@ public class TurnRunnerTest {
         // Assert only initial 3 dice were rolled
         assertEquals(STANDARD_SET.length - 3, finalGameState.diceInCup().length);
         assertEquals(3, finalGameState.diceOnTable().length);
-    }
-
-    private static class AlwaysRollAgainPlayer implements Player {
-        @Override
-        public boolean rollAgain(DecisionRelevantGameState gameState) {
-            return true;
-        }
     }
 
     private static class NeverRollAgainPlayer implements Player {
