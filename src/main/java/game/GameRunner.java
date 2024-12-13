@@ -31,7 +31,7 @@ public class GameRunner {
         GameState gameState = GameState.makeInitialState(players, dice);
         do {
             gameState = turnRunner.runTurn(gameState);
-            gameState = resetForNextTurn(gameState);
+            if (gameState.winner().isEmpty()) gameState = resetForNextTurn(gameState);
         }
         while (gameState.winner().isEmpty());
         return gameState;
