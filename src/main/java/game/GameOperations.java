@@ -44,36 +44,41 @@ public class GameOperations {
     }
 
     public static GameState moveDiceToCup(GameState gameState, List<Die> diceToMove) {
-        List<Die> tableDiceList = new ArrayList<>(gameState.diceOnTable());
-        List<Die> cupDiceList = new ArrayList<>(gameState.diceInCup());
+        diceToMove.forEach(die -> {
+            if (!gameState.diceOnTable().contains(die)) throw new IllegalArgumentException("Die " + die + " is not on the table.");
+        });
 
-        for (Die die : diceToMove) {
-            if (!tableDiceList.remove(die)) {
-                throw new IllegalArgumentException("Die " + die + " is not on the table.");
-            }
-            cupDiceList.add(die);
-        }
+        // Filter out diceToMove from the table and add them to the cup
+        List<Die> newDiceOnTable = gameState.diceOnTable().stream().filter(die -> !diceToMove.contains(die)).toList();
+        List<Die> newDiceInCup = new ArrayList<>(gameState.diceInCup());
+        newDiceInCup.addAll(diceToMove);
 
         return gameState
-                .withDiceOnTable(tableDiceList)
-                .withDiceInCup(cupDiceList);
+                .withDiceOnTable(newDiceOnTable)
+                .withDiceInCup(newDiceInCup);
     }
 
     public static GameState rollDiceToTable(GameState gameState, List<Die> diceToMove) {
-        List<Die> newDiceOnTable = new ArrayList<>(gameState.diceOnTable());
-        List<Die> newDiceInCup = new ArrayList<>(gameState.diceInCup());
+        diceToMove.forEach(die -> {
+            if (!gameState.diceInCup().contains(die)) throw new IllegalArgumentException("Die " + die + " is not in the cup.");
+        });
 
+        // Build list of rolled dice on table, tracking brains and blasts
         AtomicInteger brainsRolled = new AtomicInteger();
         AtomicInteger blastsRolled = new AtomicInteger();
-        for (Die die : diceToMove) {
-            if (!newDiceInCup.remove(die)) {
-                throw new IllegalArgumentException("Die " + die + " is not in the cup.");
-            }
+        List<Die> rolledDice = diceToMove.stream().map(die -> {
             Die rolledDie = die.rolled();
-            if (rolledDie.getCurrentFace().equals(Optional.of(BRAIN))) brainsRolled.incrementAndGet();
-            if (rolledDie.getCurrentFace().equals(Optional.of(BLAST))) blastsRolled.incrementAndGet();
-            newDiceOnTable.add(rolledDie);
-        }
+            rolledDie.getCurrentFace().ifPresent(face -> {
+                if (face == BRAIN) brainsRolled.incrementAndGet();
+                if (face == BLAST) blastsRolled.incrementAndGet();
+            });
+            return rolledDie;
+        }).toList();
+
+        // Update dice on table and in cup
+        List<Die> newDiceOnTable = new ArrayList<>(gameState.diceOnTable());
+        newDiceOnTable.addAll(rolledDice);
+        List<Die> newDiceInCup = gameState.diceInCup().stream().filter(die -> !diceToMove.contains(die)).toList();
 
         return gameState
                 .withDiceOnTable(newDiceOnTable)
@@ -83,22 +88,20 @@ public class GameOperations {
     }
 
     public static GameState rollDiceOnTable(GameState gameState, List<Die> diceToRoll) {
-        // Check if all of diceToRoll are on the table
-        for (Die die : diceToRoll) {
-            if (!gameState.diceOnTable().contains(die)) {
-                throw new IllegalArgumentException("Attempted to roll a die that is not on the table.");
-            }
-        }
+        diceToRoll.forEach(die -> {
+            if (!gameState.diceOnTable().contains(die)) throw new IllegalArgumentException("Die " + die + " is not on the table.");
+        });
 
+        // Build list of rolled dice on table, tracking brains and blasts
         AtomicInteger brainsRolled = new AtomicInteger();
         AtomicInteger blastsRolled = new AtomicInteger();
-        List<Die> newDiceOnTable = gameState.diceOnTable().stream().map((die) -> {
-            if (!diceToRoll.contains(die)) {
-                return die; // Not rolling this one
-            }
+        List<Die> newDiceOnTable = gameState.diceOnTable().stream().map(die -> {
+            if (!diceToRoll.contains(die)) return die; // Unrolled dice remain unchanged
             Die rolledDie = die.rolled();
-            if (rolledDie.getCurrentFace().equals(Optional.of(BRAIN))) brainsRolled.incrementAndGet();
-            if (rolledDie.getCurrentFace().equals(Optional.of(BLAST))) blastsRolled.incrementAndGet();
+            rolledDie.getCurrentFace().ifPresent(face -> {
+                if (face == BRAIN) brainsRolled.incrementAndGet();
+                if (face == BLAST) blastsRolled.incrementAndGet();
+            });
             return rolledDie;
         }).toList();
 
@@ -138,16 +141,9 @@ public class GameOperations {
     }
 
     private static Player getNextPlayer(GameState gameState) {
-        int currentPlayerIndex = getPlayerIndex(gameState, gameState.currentPlayer());
+        int currentPlayerIndex = gameState.playerScores().keySet().stream().toList().indexOf(gameState.currentPlayer());
         int nextPlayerIndex = (currentPlayerIndex + 1) % gameState.playerScores().size();
-        return (Player) gameState.playerScores().keySet().toArray()[nextPlayerIndex];
-    }
-
-    private static int getPlayerIndex(GameState gameState, Player player) {
-        final Player[] players = gameState.playerScores().keySet().toArray(Player[]::new);
-        for (int i = 0; i < players.length; i++)
-            if (players[i].equals(player)) return i;
-        throw new IllegalArgumentException("Asked to find a player not in the players array");
+        return gameState.playerScores().keySet().stream().toList().get(nextPlayerIndex);
     }
 
 }
