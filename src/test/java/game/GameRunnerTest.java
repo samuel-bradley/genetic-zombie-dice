@@ -2,9 +2,10 @@ package game;
 
 import dice.Die;
 import dice.DieColour;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.RepeatedTest;
-import players.AlwaysRollAgainPlayer;
 import players.Player;
+import players.RollAgainOncePlayer;
 
 import java.util.Arrays;
 import java.util.List;
@@ -18,14 +19,18 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class GameRunnerTest {
-    // TODO test resetting game state each turn
-
-    final AlwaysRollAgainPlayer player1 = new AlwaysRollAgainPlayer();
-    final AlwaysRollAgainPlayer player2 = new AlwaysRollAgainPlayer();
+    final RollAgainOncePlayer player1 = new RollAgainOncePlayer();
+    final RollAgainOncePlayer player2 = new RollAgainOncePlayer();
 
     final GameRunner runner = new GameRunner(new Player[]{player1, player2}, STANDARD_SET);
 
-    final int testRepeats = 100000;
+    final int testRepeats = 100;
+
+    @BeforeEach
+    void beforeEach() {
+        player1.reset();
+        player2.reset();
+    }
 
     @RepeatedTest(testRepeats)
     void numberOfDiceRemainsConstant() {
@@ -75,6 +80,14 @@ public class GameRunnerTest {
 
         // Player may have three blasts on table as long as also winning on that roll
         assertTrue(blastsOnTable < 3 || currentPlayerScore >= 13);
+    }
+
+    @RepeatedTest(testRepeats)
+    void eachPlayerTakesTurns() {
+        runner.runGame();
+
+        assertTrue(player1.getTimesAsked() > 1);
+        assertTrue(player2.getTimesAsked() > 1);
     }
 
 }

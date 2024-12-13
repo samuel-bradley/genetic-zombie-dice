@@ -6,6 +6,7 @@ import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Test;
 import players.AlwaysRollAgainPlayer;
 import players.Player;
+import players.RollAgainOncePlayer;
 
 import java.util.Arrays;
 import java.util.Map;
@@ -19,7 +20,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class TurnRunnerTest {
-    // TODO maybe some of these like the conservation tests would be better placed in the GameRunnerTest
 
     final TurnRunner runner = new TurnRunner();
     final AlwaysRollAgainPlayer alwaysRollAgainPlayer = new AlwaysRollAgainPlayer();
@@ -229,30 +229,4 @@ public class TurnRunnerTest {
         }
     }
 
-    private static class RollAgainOncePlayer implements Player {
-        private boolean hasRolled = false;
-        private int timesAsked = 0;
-
-        @Override
-        public boolean rollAgain(DecisionRelevantGameState gameState) {
-            ++timesAsked;
-            if (hasRolled) {
-                return false;
-            } else {
-                hasRolled = true;
-                return true;
-            }
-        }
-
-        public void reset() {
-            timesAsked = 0;
-            hasRolled = false;
-        }
-
-        public int getTimesAsked() {
-            return timesAsked;
-        }
-
-    }
 }
-
