@@ -19,11 +19,6 @@ public class TurnRunner {
             } else {
                 gameState = rollFootprintsFromTable(gameState, 3);
             }
-            int rolledBrains = (int) Arrays.stream(gameState.diceOnTable()).filter((die) -> Objects.equals(die.getCurrentFace(), Optional.of(BRAIN))).count();
-            int rolledBlasts = (int) Arrays.stream(gameState.diceOnTable()).filter((die) -> Objects.equals(die.getCurrentFace(), Optional.of(BLAST))).count();
-            gameState = gameState
-                    .withBrainsThisTurn(gameState.brainsThisTurn() + rolledBrains)
-                    .withBlastsThisTurn(gameState.blastsThisTurn() + rolledBlasts);
             // Now turn is over if 3 or more blasts, or player has won, or doesn't want to roll again
         } while (!gameState.turnIsOver() && gameState.currentPlayer().rollAgain(DecisionRelevantGameState.fromGameState(gameState)));
         return addPlayerScore(gameState, gameState.currentPlayer(), gameState.brainsThisTurn());

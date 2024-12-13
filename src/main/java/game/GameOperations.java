@@ -5,6 +5,7 @@ import players.Player;
 
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static dice.DieFace.*;
 
@@ -62,16 +63,23 @@ public class GameOperations {
         List<Die> tableDiceList = new ArrayList<>(Arrays.asList(gameState.diceOnTable()));
         List<Die> cupDiceList = new ArrayList<>(Arrays.asList(gameState.diceInCup()));
 
+        AtomicInteger brainsRolled = new AtomicInteger();
+        AtomicInteger blastsRolled = new AtomicInteger();
         for (Die die : diceToMove) {
             if (!cupDiceList.remove(die)) {
                 throw new IllegalArgumentException("Die " + die + " is not in the cup.");
             }
-            tableDiceList.add(die.rolled());
+            Die rolledDie = die.rolled();
+            if (rolledDie.getCurrentFace().equals(Optional.of(BRAIN))) brainsRolled.incrementAndGet();
+            if (rolledDie.getCurrentFace().equals(Optional.of(BLAST))) blastsRolled.incrementAndGet();
+            tableDiceList.add(rolledDie);
         }
 
         return gameState
                 .withDiceOnTable(tableDiceList.toArray(Die[]::new))
-                .withDiceInCup(cupDiceList.toArray(Die[]::new));
+                .withDiceInCup(cupDiceList.toArray(Die[]::new))
+                .withBrainsThisTurn(gameState.brainsThisTurn() + brainsRolled.get())
+                .withBlastsThisTurn(gameState.blastsThisTurn() + blastsRolled.get());
     }
 
     public static GameState rollDiceOnTable(GameState gameState, Die[] diceToRoll) {
@@ -83,14 +91,22 @@ public class GameOperations {
             }
         }
 
+        AtomicInteger brainsRolled = new AtomicInteger();
+        AtomicInteger blastsRolled = new AtomicInteger();
         Die[] newDiceOnTable = Arrays.stream(gameState.diceOnTable()).map((die) -> {
             if (!Arrays.asList(diceToRoll).contains(die)) {
                 return die; // Not rolling this one
             }
-            return die.rolled();
+            Die rolledDie = die.rolled();
+            if (rolledDie.getCurrentFace().equals(Optional.of(BRAIN))) brainsRolled.incrementAndGet();
+            if (rolledDie.getCurrentFace().equals(Optional.of(BLAST))) blastsRolled.incrementAndGet();
+            return rolledDie;
         }).toArray(Die[]::new);
 
-        return gameState.withDiceOnTable(newDiceOnTable);
+        return gameState
+                .withDiceOnTable(newDiceOnTable)
+                .withBrainsThisTurn(gameState.brainsThisTurn() + brainsRolled.get())
+                .withBlastsThisTurn(gameState.blastsThisTurn() + blastsRolled.get());
     }
 
     private static Die[] getRandomDice(Die[] dice, int numberToGet) {

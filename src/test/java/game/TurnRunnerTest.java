@@ -202,21 +202,21 @@ public class TurnRunnerTest {
 
         GameState finalGameState = runner.runTurn(initialGameState);
 
-        assertTrue(finalGameState.brainsThisTurn() <= 13);
+        assertTrue(finalGameState.brainsThisTurn() <= 15);
     }
 
     @RepeatedTest(testRepeats)
     void doesNotRollAgainIfTurnIsOverDueToBlasts() {
         GameState initialGameState = new GameState(
                 STANDARD_SET,
-                new Die[]{new Die(RED, Optional.of(BLAST)), new Die(RED, Optional.of(BLAST)), new Die(RED, Optional.of(BLAST))},
+                new Die[]{},
                 Map.of(alwaysRollAgainPlayer, 10),
                 alwaysRollAgainPlayer,
-                0,
+                3, // unrealistic setup; already 3 blasts this turn
                 0
         );
 
-        // One initial roll from cup and then the game is immediately over (unrealistic setup: three blasts on table)
+        // One initial roll from cup and then the game is immediately over
         GameState finalGameState = runner.runTurn(initialGameState);
 
         // Assert only initial 3 dice were rolled

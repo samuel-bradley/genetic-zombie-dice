@@ -3,6 +3,7 @@ package game;
 import dice.Die;
 import dice.DieColour;
 import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Test;
 import players.Player;
 import players.RandomPlayer;
@@ -11,6 +12,7 @@ import java.util.Arrays;
 import java.util.Map;
 import java.util.Optional;
 
+import static dice.DieFace.BLAST;
 import static dice.DieFace.BRAIN;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -22,6 +24,8 @@ public class GameOperationsTest {
     Die die4 = new Die(DieColour.RED, Optional.empty());
     Player player1 = new RandomPlayer();
     Player player2 = new RandomPlayer();
+
+    final int testRepeats = 100;
 
     @Nested
     class DrawAndRollDiceFromCupTests {
@@ -43,11 +47,9 @@ public class GameOperationsTest {
             assertEquals(1, updatedGameState.diceInCup().length);
             assertEquals(3, updatedGameState.diceOnTable().length);
 
-            // Everything else should remain unchanged
+            // Player scores and current player should remain unchanged; blasts and brains may vary depending on rolls
             assertEquals(initialGameState.playerScores(), updatedGameState.playerScores());
             assertEquals(initialGameState.currentPlayer(), updatedGameState.currentPlayer());
-            assertEquals(initialGameState.blastsThisTurn(), updatedGameState.blastsThisTurn());
-            assertEquals(initialGameState.brainsThisTurn(), updatedGameState.brainsThisTurn());
         }
 
         @Test
@@ -67,11 +69,9 @@ public class GameOperationsTest {
             assertEquals(0, updatedGameState.diceInCup().length);
             assertEquals(3, updatedGameState.diceOnTable().length);
 
-            // Everything else should remain unchanged
+            // Player scores and current player should remain unchanged; blasts and brains may vary depending on rolls
             assertEquals(initialGameState.playerScores(), updatedGameState.playerScores());
             assertEquals(initialGameState.currentPlayer(), updatedGameState.currentPlayer());
-            assertEquals(initialGameState.blastsThisTurn(), updatedGameState.blastsThisTurn());
-            assertEquals(initialGameState.brainsThisTurn(), updatedGameState.brainsThisTurn());
         }
 
         @Test
@@ -128,7 +128,7 @@ public class GameOperationsTest {
         assertThrows(IllegalArgumentException.class, () -> GameOperations.moveDiceToCup(gameState, new Die[]{die2}));
     }
 
-    @Test
+    @RepeatedTest(testRepeats)
     void rollsDiceToTable() {
         GameState initialGameState = new GameState(
                 new Die[]{die1, die2},
@@ -141,6 +141,8 @@ public class GameOperationsTest {
 
         GameState updatedGameState = GameOperations.rollDiceToTable(initialGameState, new Die[]{die2});
         DieColour[] updatedDieColoursOnTable = Arrays.stream(updatedGameState.diceOnTable()).map(Die::getColour).toArray(DieColour[]::new);
+        int brainsOnTable = (int) Arrays.stream(updatedGameState.diceOnTable()).map(Die::getCurrentFace).filter(face -> face.equals(Optional.of(BRAIN))).count();
+        int blastsOnTable = (int) Arrays.stream(updatedGameState.diceOnTable()).map(Die::getCurrentFace).filter(face -> face.equals(Optional.of(BLAST))).count();
 
         assertArrayEquals(new Die[]{die1}, updatedGameState.diceInCup());
         // Can't assert exact die on table, since it's been rolled
@@ -150,9 +152,9 @@ public class GameOperationsTest {
         assertEquals(initialGameState.playerScores(), updatedGameState.playerScores());
         // Current player stays the same
         assertEquals(initialGameState.currentPlayer(), updatedGameState.currentPlayer());
-        // Blasts and brains this turn stay the same
-        assertEquals(initialGameState.blastsThisTurn(), updatedGameState.blastsThisTurn());
-        assertEquals(initialGameState.brainsThisTurn(), updatedGameState.brainsThisTurn());
+        // Blasts and brains this turn incremented according to roll
+        assertEquals(blastsOnTable + 1, updatedGameState.blastsThisTurn());
+        assertEquals(brainsOnTable + 2, updatedGameState.brainsThisTurn());
     }
 
     @Test
@@ -169,7 +171,7 @@ public class GameOperationsTest {
         assertThrows(IllegalArgumentException.class, () -> GameOperations.rollDiceToTable(gameState, new Die[]{die3}));
     }
 
-    @Test
+    @RepeatedTest(testRepeats)
     void rollsDiceOnTable() {
         GameState initialGameState = new GameState(
                 new Die[]{die1, die2},
@@ -194,9 +196,9 @@ public class GameOperationsTest {
         assertEquals(initialGameState.playerScores(), updatedGameState.playerScores());
         // Current player stays the same
         assertEquals(initialGameState.currentPlayer(), updatedGameState.currentPlayer());
-        // Blasts and brains this turn stay the same
-        assertEquals(initialGameState.blastsThisTurn(), updatedGameState.blastsThisTurn());
-        assertEquals(initialGameState.brainsThisTurn(), updatedGameState.brainsThisTurn());
+        // Blasts and brains this turn incremented according to roll
+        assertEquals(updatedGameState.diceOnTable()[0].getCurrentFace().equals(Optional.of(BLAST)) ? 2 : 1, updatedGameState.blastsThisTurn());
+        assertEquals(updatedGameState.diceOnTable()[0].getCurrentFace().equals(Optional.of(BRAIN)) ? 3 : 2, updatedGameState.brainsThisTurn());
     }
 
     @Test
