@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test;
 import players.Player;
 import players.RandomPlayer;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -23,9 +24,9 @@ class GameStateTest {
 
     @Test
     void makesInitialState() {
-        GameState state = GameState.makeInitialState(new Player[]{player1, player2}, new Die[]{die1, die2, die3, die4});
-        assertArrayEquals(new Die[]{die1, die2, die3, die4}, state.diceInCup());
-        assertArrayEquals(new Die[]{}, state.diceOnTable());
+        GameState state = GameState.makeInitialState(List.of(player1, player2), List.of(die1, die2, die3, die4));
+        assertIterableEquals(List.of(die1, die2, die3, die4), state.diceInCup());
+        assertIterableEquals(List.of(), state.diceOnTable());
         assertEquals(Map.of(player1, 0, player2, 0), state.playerScores());
     }
 
@@ -35,19 +36,19 @@ class GameStateTest {
         @Test
         void updatesDiceInCup() {
             GameState initialGameState = new GameState(
-                    new Die[]{die1, die2},
-                    new Die[]{die3, die4},
+                    List.of(die1, die2),
+                    List.of(die3, die4),
                     Map.of(player1, 10, player2, 5),
                     player1,
                     1,
                     2
             );
 
-            GameState updatedGameState = initialGameState.withDiceInCup(new Die[]{die1, die2, die3});
+            GameState updatedGameState = initialGameState.withDiceInCup(List.of(die1, die2, die3));
 
-            assertArrayEquals(new Die[]{die1, die2, die3}, updatedGameState.diceInCup());
+            assertIterableEquals(List.of(die1, die2, die3), updatedGameState.diceInCup());
             // Dice on table stay the same
-            assertArrayEquals(new Die[]{die3, die4}, updatedGameState.diceOnTable());
+            assertIterableEquals(List.of(die3, die4), updatedGameState.diceOnTable());
             // Player scores stay the same
             assertEquals(initialGameState.playerScores(), updatedGameState.playerScores());
             // Current player stays the same
@@ -60,19 +61,19 @@ class GameStateTest {
         @Test
         void updatesDiceOnTable() {
             GameState initialGameState = new GameState(
-                    new Die[]{die1, die2},
-                    new Die[]{die3, die4},
+                    List.of(die1, die2),
+                    List.of(die3, die4),
                     Map.of(player1, 10, player2, 5),
                     player1,
                     1,
                     2
             );
 
-            GameState updatedGameState = initialGameState.withDiceOnTable(new Die[]{die1, die2, die3});
+            GameState updatedGameState = initialGameState.withDiceOnTable(List.of(die1, die2, die3));
 
-            assertArrayEquals(new Die[]{die1, die2, die3}, updatedGameState.diceOnTable());
+            assertIterableEquals(List.of(die1, die2, die3), updatedGameState.diceOnTable());
             // Dice in cup stay the same
-            assertArrayEquals(new Die[]{die1, die2}, updatedGameState.diceInCup());
+            assertIterableEquals(List.of(die1, die2), updatedGameState.diceInCup());
             // Player scores stay the same
             assertEquals(initialGameState.playerScores(), updatedGameState.playerScores());
             // Current player stays the same
@@ -85,8 +86,8 @@ class GameStateTest {
         @Test
         void updatesPlayerScores() {
             GameState initialGameState = new GameState(
-                    new Die[]{die1, die2},
-                    new Die[]{die3, die4},
+                    List.of(die1, die2),
+                    List.of(die3, die4),
                     Map.of(player1, 10, player2, 5),
                     player1,
                     1,
@@ -97,9 +98,9 @@ class GameStateTest {
 
             assertEquals(Map.of(player1, 12, player2, 5), updatedGameState.playerScores());
             // Dice in cup stay the same
-            assertArrayEquals(new Die[]{die1, die2}, updatedGameState.diceInCup());
+            assertIterableEquals(List.of(die1, die2), updatedGameState.diceInCup());
             // Dice on table stay the same
-            assertArrayEquals(new Die[]{die3, die4}, updatedGameState.diceOnTable());
+            assertIterableEquals(List.of(die3, die4), updatedGameState.diceOnTable());
             // Current player stays the same
             assertEquals(initialGameState.currentPlayer(), updatedGameState.currentPlayer());
             // Blasts and brains this turn stay the same
@@ -110,8 +111,8 @@ class GameStateTest {
         @Test
         void updatesCurrentPlayer() {
             GameState initialGameState = new GameState(
-                    new Die[]{die1, die2},
-                    new Die[]{die3, die4},
+                    List.of(die1, die2),
+                    List.of(die3, die4),
                     Map.of(player1, 10, player2, 5),
                     player1,
                     1,
@@ -122,9 +123,9 @@ class GameStateTest {
 
             assertEquals(player2, updatedGameState.currentPlayer());
             // Dice in cup stay the same
-            assertArrayEquals(new Die[]{die1, die2}, updatedGameState.diceInCup());
+            assertIterableEquals(List.of(die1, die2), updatedGameState.diceInCup());
             // Dice on table stay the same
-            assertArrayEquals(new Die[]{die3, die4}, updatedGameState.diceOnTable());
+            assertIterableEquals(List.of(die3, die4), updatedGameState.diceOnTable());
             // Player scores stay the same
             assertEquals(initialGameState.playerScores(), updatedGameState.playerScores());
             // Blasts and brains this turn stay the same
@@ -135,8 +136,8 @@ class GameStateTest {
         @Test
         void updatingCurrentPlayerThrowsExceptionIfPlayerNotInGame() {
             GameState gameState = new GameState(
-                    new Die[]{die1, die2},
-                    new Die[]{die3, die4},
+                    List.of(die1, die2),
+                    List.of(die3, die4),
                     Map.of(player1, 10),
                     player1,
                     1,
@@ -149,8 +150,8 @@ class GameStateTest {
         @Test
         void updatesBlastsThisTurn() {
             GameState initialGameState = new GameState(
-                    new Die[]{die1, die2},
-                    new Die[]{die3, die4},
+                    List.of(die1, die2),
+                    List.of(die3, die4),
                     Map.of(player1, 10, player2, 14),
                     player1,
                     1,
@@ -163,9 +164,9 @@ class GameStateTest {
             // Brains this turn stays the same
             assertEquals(2, updatedGameState.brainsThisTurn());
             // Dice in cup stay the same
-            assertArrayEquals(new Die[]{die1, die2}, updatedGameState.diceInCup());
+            assertIterableEquals(List.of(die1, die2), updatedGameState.diceInCup());
             // Dice on table stay the same
-            assertArrayEquals(new Die[]{die3, die4}, updatedGameState.diceOnTable());
+            assertIterableEquals(List.of(die3, die4), updatedGameState.diceOnTable());
             // Player scores stay the same
             assertEquals(initialGameState.playerScores(), updatedGameState.playerScores());
             // Current player stays the same
@@ -175,8 +176,8 @@ class GameStateTest {
         @Test
         void updatesBrainsThisTurn() {
             GameState initialGameState = new GameState(
-                    new Die[]{die1, die2},
-                    new Die[]{die3, die4},
+                    List.of(die1, die2),
+                    List.of(die3, die4),
                     Map.of(player1, 10, player2, 14),
                     player1,
                     1,
@@ -189,9 +190,9 @@ class GameStateTest {
             // Blasts this turn stays the same
             assertEquals(1, updatedGameState.blastsThisTurn());
             // Dice in cup stay the same
-            assertArrayEquals(new Die[]{die1, die2}, updatedGameState.diceInCup());
+            assertIterableEquals(List.of(die1, die2), updatedGameState.diceInCup());
             // Dice on table stay the same
-            assertArrayEquals(new Die[]{die3, die4}, updatedGameState.diceOnTable());
+            assertIterableEquals(List.of(die3, die4), updatedGameState.diceOnTable());
             // Player scores stay the same
             assertEquals(initialGameState.playerScores(), updatedGameState.playerScores());
             // Current player stays the same
@@ -205,8 +206,8 @@ class GameStateTest {
         @Test
         void findsWinnerWhenPlayerExceedsWinningScore() {
             GameState gameState = new GameState(
-                    new Die[]{die1, die2},
-                    new Die[]{die3, die4},
+                    List.of(die1, die2),
+                    List.of(die3, die4),
                     Map.of(player1, 10, player2, 14),
                     player1,
                     1,
@@ -222,8 +223,8 @@ class GameStateTest {
         @Test
         void findsWinnerWhenPlayerHasWinningScore() {
             GameState gameState = new GameState(
-                    new Die[]{die1, die2},
-                    new Die[]{die3, die4},
+                    List.of(die1, die2),
+                    List.of(die3, die4),
                     Map.of(player1, 13, player2, 10),
                     player1,
                     1,
@@ -239,8 +240,8 @@ class GameStateTest {
         @Test
         void doesNotFindWinnerWhenNoPlayerHasWinningScore() {
             GameState gameState = new GameState(
-                    new Die[]{die1, die2},
-                    new Die[]{die3, die4},
+                    List.of(die1, die2),
+                    List.of(die3, die4),
                     Map.of(player1, 10, player2, 12),
                     player1,
                     1,
@@ -259,8 +260,8 @@ class GameStateTest {
         @Test
         void turnIsOverWhenBlastsIsThree() {
             GameState gameState = new GameState(
-                    new Die[]{},
-                    new Die[]{},
+                    List.of(),
+                    List.of(),
                     Map.of(player1, 5, player2, 10),
                     player1,
                     3,
@@ -271,8 +272,9 @@ class GameStateTest {
 
         @Test
         void turnIsOverWhenBlastsExceedsThree() {
-            GameState gameState = new GameState(new Die[]{},
-                    new Die[]{},
+            GameState gameState = new GameState(
+                    List.of(),
+                    List.of(),
                     Map.of(player1, 5, player2, 10),
                     player1,
                     4,
@@ -283,8 +285,9 @@ class GameStateTest {
 
         @Test
         void turnIsOverWhenCurrentPlayerScorePlusBrainsIsThirteen() {
-            GameState gameState = new GameState(new Die[]{},
-                    new Die[]{},
+            GameState gameState = new GameState(
+                    List.of(),
+                    List.of(),
                     Map.of(player1, 10, player2, 10),
                     player1,
                     2,
@@ -295,8 +298,9 @@ class GameStateTest {
 
         @Test
         void turnIsOverWhenCurrentPlayerScorePlusBrainsExceedsThirteen() {
-            GameState gameState = new GameState(new Die[]{},
-                    new Die[]{},
+            GameState gameState = new GameState(
+                    List.of(),
+                    List.of(),
                     Map.of(player1, 11, player2, 10),
                     player1,
                     2,
@@ -307,8 +311,9 @@ class GameStateTest {
 
         @Test
         void turnNotOverWhenBlastsLessThanThreeAndBrainsAndCurrentPlayerScoreLessThanThirteen() {
-            GameState gameState = new GameState(new Die[]{},
-                    new Die[]{},
+            GameState gameState = new GameState(
+                    List.of(),
+                    List.of(),
                     Map.of(player1, 10, player2, 10),
                     player1,
                     2,

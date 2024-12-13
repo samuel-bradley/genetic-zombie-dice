@@ -1,10 +1,9 @@
 package game;
 
-import java.util.Arrays;
 import java.util.Objects;
 import java.util.Optional;
 
-import static dice.DieFace.*;
+import static dice.DieFace.FOOTSTEPS;
 import static game.GameOperations.*;
 
 public class TurnRunner {
@@ -12,7 +11,7 @@ public class TurnRunner {
     public GameState runTurn(GameState gameState) {
         // Initial roll is mandatory
         do {
-            int currentFootsteps = (int) Arrays.stream(gameState.diceOnTable()).filter((die) -> Objects.equals(die.getCurrentFace(), Optional.of(FOOTSTEPS))).count();
+            int currentFootsteps = (int) gameState.diceOnTable().stream().filter((die) -> Objects.equals(die.getCurrentFace(), Optional.of(FOOTSTEPS))).count();
             if (currentFootsteps < 3) {
                 gameState = drawAndRollDiceFromCup(gameState, 3 - currentFootsteps);
                 gameState = rollFootprintsFromTable(gameState, currentFootsteps);

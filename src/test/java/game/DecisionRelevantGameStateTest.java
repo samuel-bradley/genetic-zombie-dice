@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test;
 import players.Player;
 import players.RandomPlayer;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -21,8 +22,8 @@ class DecisionRelevantGameStateTest {
         Die greenDie = new Die(DieColour.GREEN, Optional.empty());
 
         // Mock data for GameState
-        Die[] diceInCup = {redDie};
-        Die[] diceOnTable = {greenDie};
+        List<Die> diceInCup = List.of(redDie);
+        List<Die> diceOnTable = List.of(greenDie);
         Map<Player, Integer> playerScores = Map.of(
                 new RandomPlayer(), 10,
                 new RandomPlayer(), 15
@@ -38,8 +39,8 @@ class DecisionRelevantGameStateTest {
         DecisionRelevantGameState decisionRelevantGameState = DecisionRelevantGameState.fromGameState(gameState);
 
         // Verify that only the relevant attributes are transferred
-        assertArrayEquals(diceInCup, decisionRelevantGameState.diceInCup());
-        assertArrayEquals(diceOnTable, decisionRelevantGameState.diceOnTable());
+        assertIterableEquals(diceInCup, decisionRelevantGameState.diceInCup());
+        assertIterableEquals(diceOnTable, decisionRelevantGameState.diceOnTable());
         assertEquals(blastsThisTurn, decisionRelevantGameState.blastsThisTurn());
         assertEquals(brainsThisTurn, decisionRelevantGameState.brainsThisTurn());
     }
@@ -50,15 +51,15 @@ class DecisionRelevantGameStateTest {
         Die die2 = new Die(DieColour.GREEN, Optional.of(DieFace.BRAIN));
 
         // Create two identical instances
-        DecisionRelevantGameState state1 = new DecisionRelevantGameState(new Die[]{die1}, new Die[]{die2}, 2, 3);
-        DecisionRelevantGameState state2 = new DecisionRelevantGameState(new Die[]{die1}, new Die[]{die2}, 2, 3);
+        DecisionRelevantGameState state1 = new DecisionRelevantGameState(List.of(die1), List.of(die2), 2, 3);
+        DecisionRelevantGameState state2 = new DecisionRelevantGameState(List.of(die1), List.of(die2), 2, 3);
 
         // Verify equality and hashCode
         assertEquals(state1, state2);
         assertEquals(state1.hashCode(), state2.hashCode());
 
         // Modify one attribute (diceOnTable) to ensure inequality
-        DecisionRelevantGameState state3 = new DecisionRelevantGameState(new Die[]{die1}, new Die[]{die1}, 2, 3);
+        DecisionRelevantGameState state3 = new DecisionRelevantGameState(List.of(die1), List.of(die1), 2, 3);
         assertNotEquals(state1, state3);
     }
 }

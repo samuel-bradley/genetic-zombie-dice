@@ -11,41 +11,41 @@ import static dice.DieFace.*;
 
 public class GameOperations {
 
-    public static Player getRandomPlayer(Player[] players) {
-        final int randomIndex = ThreadLocalRandom.current().nextInt(players.length);
-        return players[randomIndex];
+    public static Player getRandomPlayer(List<Player> players) {
+        final int randomIndex = ThreadLocalRandom.current().nextInt(players.size());
+        return players.get(randomIndex);
     }
 
     public static GameState drawAndRollDiceFromCup(GameState gameState, int numberToDrawAndRoll) {
-        if (gameState.diceInCup().length == numberToDrawAndRoll) {
+        if (gameState.diceInCup().size() == numberToDrawAndRoll) {
             // Exact number of required dice in cup - just roll these
             return rollDiceToTable(gameState, gameState.diceInCup());
-        } else if (gameState.diceInCup().length > numberToDrawAndRoll) {
+        } else if (gameState.diceInCup().size() > numberToDrawAndRoll) {
             // More than sufficient dice in cup - select from them randomly
-            final Die[] diceToDraw = getRandomDice(gameState.diceInCup(), numberToDrawAndRoll);
+            final List<Die> diceToDraw = getRandomDice(gameState.diceInCup(), numberToDrawAndRoll);
             return rollDiceToTable(gameState, diceToDraw);
         } else {
             // Insufficient dice left in cup - first move brains from table to cup
-            final Die[] brainsOnTable = Arrays.stream(gameState.diceOnTable())
+            final List<Die> brainsOnTable = gameState.diceOnTable().stream()
                     .filter((die) -> die.getCurrentFace().isPresent() && die.getCurrentFace().get() == BRAIN)
-                    .toArray(Die[]::new);
+                    .toList();
             final GameState withBrainsInCup = moveDiceToCup(gameState, brainsOnTable);
             // Now roll dice randomly from the cup
-            final Die[] diceToDraw = getRandomDice(withBrainsInCup.diceInCup(), numberToDrawAndRoll);
+            final List<Die> diceToDraw = getRandomDice(withBrainsInCup.diceInCup(), numberToDrawAndRoll);
             return rollDiceToTable(withBrainsInCup, diceToDraw);
         }
     }
 
     public static GameState rollFootprintsFromTable(GameState gameState, int numberToRoll) {
-        final Die[] footprintsOnTable = Arrays.stream(gameState.diceOnTable())
+        final List<Die> footprintsOnTable = gameState.diceOnTable().stream()
                 .filter((die) -> die.getCurrentFace().isPresent() && die.getCurrentFace().get() == FOOTSTEPS).limit(numberToRoll)
-                .toArray(Die[]::new);
+                .toList();
         return rollDiceOnTable(gameState, footprintsOnTable);
     }
 
-    public static GameState moveDiceToCup(GameState gameState, Die[] diceToMove) {
-        List<Die> tableDiceList = new ArrayList<>(Arrays.asList(gameState.diceOnTable()));
-        List<Die> cupDiceList = new ArrayList<>(Arrays.asList(gameState.diceInCup()));
+    public static GameState moveDiceToCup(GameState gameState, List<Die> diceToMove) {
+        List<Die> tableDiceList = new ArrayList<>(gameState.diceOnTable());
+        List<Die> cupDiceList = new ArrayList<>(gameState.diceInCup());
 
         for (Die die : diceToMove) {
             if (!tableDiceList.remove(die)) {
@@ -55,53 +55,52 @@ public class GameOperations {
         }
 
         return gameState
-                .withDiceOnTable(tableDiceList.toArray(Die[]::new))
-                .withDiceInCup(cupDiceList.toArray(Die[]::new));
+                .withDiceOnTable(tableDiceList)
+                .withDiceInCup(cupDiceList);
     }
 
-    public static GameState rollDiceToTable(GameState gameState, Die[] diceToMove) {
-        List<Die> tableDiceList = new ArrayList<>(Arrays.asList(gameState.diceOnTable()));
-        List<Die> cupDiceList = new ArrayList<>(Arrays.asList(gameState.diceInCup()));
+    public static GameState rollDiceToTable(GameState gameState, List<Die> diceToMove) {
+        List<Die> newDiceOnTable = new ArrayList<>(gameState.diceOnTable());
+        List<Die> newDiceInCup = new ArrayList<>(gameState.diceInCup());
 
         AtomicInteger brainsRolled = new AtomicInteger();
         AtomicInteger blastsRolled = new AtomicInteger();
         for (Die die : diceToMove) {
-            if (!cupDiceList.remove(die)) {
+            if (!newDiceInCup.remove(die)) {
                 throw new IllegalArgumentException("Die " + die + " is not in the cup.");
             }
             Die rolledDie = die.rolled();
             if (rolledDie.getCurrentFace().equals(Optional.of(BRAIN))) brainsRolled.incrementAndGet();
             if (rolledDie.getCurrentFace().equals(Optional.of(BLAST))) blastsRolled.incrementAndGet();
-            tableDiceList.add(rolledDie);
+            newDiceOnTable.add(rolledDie);
         }
 
         return gameState
-                .withDiceOnTable(tableDiceList.toArray(Die[]::new))
-                .withDiceInCup(cupDiceList.toArray(Die[]::new))
+                .withDiceOnTable(newDiceOnTable)
+                .withDiceInCup(newDiceInCup)
                 .withBrainsThisTurn(gameState.brainsThisTurn() + brainsRolled.get())
                 .withBlastsThisTurn(gameState.blastsThisTurn() + blastsRolled.get());
     }
 
-    public static GameState rollDiceOnTable(GameState gameState, Die[] diceToRoll) {
+    public static GameState rollDiceOnTable(GameState gameState, List<Die> diceToRoll) {
         // Check if all of diceToRoll are on the table
-        List<Die> diceOnTableList = Arrays.asList(gameState.diceOnTable());
         for (Die die : diceToRoll) {
-            if (!diceOnTableList.contains(die)) {
+            if (!gameState.diceOnTable().contains(die)) {
                 throw new IllegalArgumentException("Attempted to roll a die that is not on the table.");
             }
         }
 
         AtomicInteger brainsRolled = new AtomicInteger();
         AtomicInteger blastsRolled = new AtomicInteger();
-        Die[] newDiceOnTable = Arrays.stream(gameState.diceOnTable()).map((die) -> {
-            if (!Arrays.asList(diceToRoll).contains(die)) {
+        List<Die> newDiceOnTable = gameState.diceOnTable().stream().map((die) -> {
+            if (!diceToRoll.contains(die)) {
                 return die; // Not rolling this one
             }
             Die rolledDie = die.rolled();
             if (rolledDie.getCurrentFace().equals(Optional.of(BRAIN))) brainsRolled.incrementAndGet();
             if (rolledDie.getCurrentFace().equals(Optional.of(BLAST))) blastsRolled.incrementAndGet();
             return rolledDie;
-        }).toArray(Die[]::new);
+        }).toList();
 
         return gameState
                 .withDiceOnTable(newDiceOnTable)
@@ -109,26 +108,16 @@ public class GameOperations {
                 .withBlastsThisTurn(gameState.blastsThisTurn() + blastsRolled.get());
     }
 
-    private static Die[] getRandomDice(Die[] dice, int numberToGet) {
-        if (numberToGet > dice.length)
-            throw new IllegalArgumentException("Cannot get " + numberToGet + " dice from " + dice.length + " dice");
+    private static List<Die> getRandomDice(List<Die> dice, int numberToGet) {
+        if (numberToGet > dice.size())
+            throw new IllegalArgumentException("Cannot get " + numberToGet + " dice from " + dice.size() + " dice");
 
         final ThreadLocalRandom random = ThreadLocalRandom.current();
-        final Set<Integer> selectedIndices = new HashSet<>();
 
-        while (selectedIndices.size() < numberToGet) {
-            int index = random.nextInt(dice.length);
-            // Track selected dice; adding to HashSet ensures uniqueness
-            selectedIndices.add(index);
-        }
+        List<Die> shuffledDice = (new ArrayList<>(dice));
+        Collections.shuffle(shuffledDice, random);
 
-        Die[] result = new Die[numberToGet];
-        int i = 0;
-        for (int index : selectedIndices) {
-            result[i++] = dice[index];
-        }
-
-        return result;
+        return shuffledDice.subList(0, numberToGet);
     }
 
     public static GameState addPlayerScore(GameState gameState, Player player, int scoreToAdd) {

@@ -8,7 +8,7 @@ import players.AlwaysRollAgainPlayer;
 import players.Player;
 import players.RollAgainOncePlayer;
 
-import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -36,7 +36,7 @@ public class TurnRunnerTest {
     void doesNotDrawDiceFromCupIfThreeFootstepsOnTable() {
         GameState initialGameState = new GameState(
                 STANDARD_SET,
-                new Die[]{new Die(GREEN, Optional.of(FOOTSTEPS)), new Die(GREEN, Optional.of(FOOTSTEPS)), new Die(GREEN, Optional.of(FOOTSTEPS))},
+                List.of(new Die(GREEN, Optional.of(FOOTSTEPS)), new Die(GREEN, Optional.of(FOOTSTEPS)), new Die(GREEN, Optional.of(FOOTSTEPS))),
                 Map.of(neverRollAgainPlayer, 10),
                 neverRollAgainPlayer,
                 0,
@@ -46,14 +46,14 @@ public class TurnRunnerTest {
         GameState finalGameState = runner.runTurn(initialGameState);
 
         // Should not have drawn any dice from cup, since three footsteps already on table
-        assertEquals(STANDARD_SET.length, finalGameState.diceInCup().length);
+        assertEquals(STANDARD_SET.size(), finalGameState.diceInCup().size());
     }
 
     @Test
     void drawsDiceFromCupIfInsufficientFootstepsOnTable() {
         GameState initialGameState = new GameState(
                 STANDARD_SET,
-                new Die[]{new Die(GREEN, Optional.of(FOOTSTEPS)), new Die(GREEN, Optional.of(FOOTSTEPS))},
+                List.of(new Die(GREEN, Optional.of(FOOTSTEPS)), new Die(GREEN, Optional.of(FOOTSTEPS))),
                 Map.of(neverRollAgainPlayer, 10),
                 neverRollAgainPlayer,
                 0,
@@ -63,7 +63,7 @@ public class TurnRunnerTest {
         GameState finalGameState = runner.runTurn(initialGameState);
 
         // Should have drawn one die from cup, since only two footsteps already on table
-        assertEquals(STANDARD_SET.length - 1, finalGameState.diceInCup().length);
+        assertEquals(STANDARD_SET.size() - 1, finalGameState.diceInCup().size());
     }
 
     @Test
@@ -71,8 +71,8 @@ public class TurnRunnerTest {
         // initial game state has 1 dice in cup, 1 footstep on table, N brains on table, 'always roll again' player - assert N-1 in cup
 
         GameState initialGameState = new GameState(
-                new Die[]{new Die(YELLOW, Optional.empty())},
-                new Die[]{new Die(GREEN, Optional.of(FOOTSTEPS)), new Die(RED, Optional.of(BRAIN)), new Die(RED, Optional.of(BRAIN)), new Die(RED, Optional.of(BRAIN))},
+                List.of(new Die(YELLOW, Optional.empty())),
+                List.of(new Die(GREEN, Optional.of(FOOTSTEPS)), new Die(RED, Optional.of(BRAIN)), new Die(RED, Optional.of(BRAIN)), new Die(RED, Optional.of(BRAIN))),
                 Map.of(neverRollAgainPlayer, 10),
                 neverRollAgainPlayer,
                 0,
@@ -82,14 +82,14 @@ public class TurnRunnerTest {
         // One die in cup, three brains on table - should return brains to table and draw two, leaving two in cup
         GameState finalGameState = runner.runTurn(initialGameState);
 
-        assertEquals(2, finalGameState.diceInCup().length);
+        assertEquals(2, finalGameState.diceInCup().size());
     }
 
     @RepeatedTest(testRepeats)
     void addsRolledBrainsToCurrentPlayerScore() {
         GameState initialGameState = new GameState(
                 STANDARD_SET,
-                new Die[]{},
+                List.of(),
                 Map.of(neverRollAgainPlayer, 10),
                 neverRollAgainPlayer,
                 0,
@@ -105,7 +105,7 @@ public class TurnRunnerTest {
     void leavesThreeDiceOnTableAfterOneRoll() {
         GameState initialGameState = new GameState(
                 STANDARD_SET,
-                new Die[]{},
+                List.of(),
                 Map.of(neverRollAgainPlayer, 0),
                 neverRollAgainPlayer,
                 0,
@@ -115,14 +115,14 @@ public class TurnRunnerTest {
         // There will be one mandatory initial roll
         GameState finalGameState = runner.runTurn(initialGameState);
 
-        assertEquals(3, finalGameState.diceOnTable().length);
+        assertEquals(3, finalGameState.diceOnTable().size());
     }
 
     @RepeatedTest(testRepeats)
     void allDiceOnTableHaveDefinedFaces() {
         GameState initialGameState = new GameState(
                 STANDARD_SET,
-                new Die[]{},
+                List.of(),
                 Map.of(alwaysRollAgainPlayer, 0),
                 alwaysRollAgainPlayer,
                 0,
@@ -131,7 +131,7 @@ public class TurnRunnerTest {
 
         GameState finalGameState = runner.runTurn(initialGameState);
 
-        assertTrue(Arrays.stream(finalGameState.diceOnTable()).allMatch(die -> die.getCurrentFace().isPresent()));
+        assertTrue(finalGameState.diceOnTable().stream().allMatch(die -> die.getCurrentFace().isPresent()));
     }
 
     @RepeatedTest(testRepeats)
@@ -139,7 +139,7 @@ public class TurnRunnerTest {
         // The most blasts we should end up with is 2 on the table plus 3 extra rolled, since 3 or more ends the turn
         GameState initialGameState = new GameState(
                 STANDARD_SET,
-                new Die[]{},
+                List.of(),
                 Map.of(alwaysRollAgainPlayer, 0),
                 alwaysRollAgainPlayer,
                 0,
@@ -156,7 +156,7 @@ public class TurnRunnerTest {
         // The most brains we should end up with is 12 on the table plus 3 extra rolled, since 13 or more ends the turn
         GameState initialGameState = new GameState(
                 STANDARD_SET,
-                new Die[]{},
+                List.of(),
                 Map.of(alwaysRollAgainPlayer, 0),
                 alwaysRollAgainPlayer,
                 0,
@@ -172,7 +172,7 @@ public class TurnRunnerTest {
     void doesNotRollAgainIfTurnIsOverDueToBlasts() {
         GameState initialGameState = new GameState(
                 STANDARD_SET,
-                new Die[]{},
+                List.of(),
                 Map.of(alwaysRollAgainPlayer, 10),
                 alwaysRollAgainPlayer,
                 3, // unrealistic setup; already 3 blasts this turn
@@ -183,14 +183,14 @@ public class TurnRunnerTest {
         GameState finalGameState = runner.runTurn(initialGameState);
 
         // Assert only initial 3 dice were rolled
-        assertEquals(STANDARD_SET.length - 3, finalGameState.diceInCup().length);
+        assertEquals(STANDARD_SET.size() - 3, finalGameState.diceInCup().size());
     }
 
     @RepeatedTest(testRepeats)
     void doesNotRollAgainIfTurnIsOverDueToScore() {
         GameState initialGameState = new GameState(
                 STANDARD_SET,
-                new Die[]{},
+                List.of(),
                 Map.of(alwaysRollAgainPlayer, 13),
                 alwaysRollAgainPlayer,
                 0,
@@ -201,14 +201,14 @@ public class TurnRunnerTest {
         GameState finalGameState = runner.runTurn(initialGameState);
 
         // Assert only initial 3 dice were rolled
-        assertEquals(STANDARD_SET.length - 3, finalGameState.diceInCup().length);
+        assertEquals(STANDARD_SET.size() - 3, finalGameState.diceInCup().size());
     }
 
     @RepeatedTest(testRepeats)
     void doesNotRollAgainIfPlayerChoosesNotTo() {
         GameState initialGameState = new GameState(
                 STANDARD_SET,
-                new Die[]{},
+                List.of(),
                 Map.of(neverRollAgainPlayer, 0),
                 neverRollAgainPlayer,
                 0,
@@ -218,8 +218,8 @@ public class TurnRunnerTest {
         GameState finalGameState = runner.runTurn(initialGameState);
 
         // Assert only initial 3 dice were rolled
-        assertEquals(STANDARD_SET.length - 3, finalGameState.diceInCup().length);
-        assertEquals(3, finalGameState.diceOnTable().length);
+        assertEquals(STANDARD_SET.size() - 3, finalGameState.diceInCup().size());
+        assertEquals(3, finalGameState.diceOnTable().size());
     }
 
     private static class NeverRollAgainPlayer implements Player {

@@ -1,5 +1,6 @@
 package dice;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
@@ -36,7 +37,7 @@ public class Die {
         return new Die(colour, Optional.of(colour.getFaces()[faceIndex]), random);
     }
 
-    public static final Die[] STANDARD_SET = {
+    public static final List<Die> STANDARD_SET = List.of(
             new Die(GREEN, Optional.empty()),
             new Die(GREEN, Optional.empty()),
             new Die(GREEN, Optional.empty()),
@@ -50,5 +51,5 @@ public class Die {
             new Die(RED, Optional.empty()),
             new Die(RED, Optional.empty()),
             new Die(RED, Optional.empty())
-    };
+    );
 }

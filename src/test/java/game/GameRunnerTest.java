@@ -4,10 +4,8 @@ import dice.Die;
 import dice.DieColour;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.RepeatedTest;
-import players.Player;
 import players.RollAgainOncePlayer;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -22,7 +20,7 @@ public class GameRunnerTest {
     final RollAgainOncePlayer player1 = new RollAgainOncePlayer();
     final RollAgainOncePlayer player2 = new RollAgainOncePlayer();
 
-    final GameRunner runner = new GameRunner(new Player[]{player1, player2}, STANDARD_SET);
+    final GameRunner runner = new GameRunner(List.of(player1, player2), STANDARD_SET);
 
     final int testRepeats = 100;
 
@@ -36,18 +34,18 @@ public class GameRunnerTest {
     void numberOfDiceRemainsConstant() {
         GameState finalGameState = runner.runGame();
 
-        assertEquals(STANDARD_SET.length, finalGameState.diceInCup().length + finalGameState.diceOnTable().length);
+        assertEquals(STANDARD_SET.size(), finalGameState.diceInCup().size() + finalGameState.diceOnTable().size());
     }
 
     @RepeatedTest(testRepeats)
     void coloursOfDiceRemainConstant() {
         GameState finalGameState = runner.runGame();
 
-        List<DieColour> finalCupDiceColours = Arrays.stream(finalGameState.diceInCup()).map(Die::getColour).toList();
-        List<DieColour> finalTableDiceColours = Arrays.stream(finalGameState.diceOnTable()).map(Die::getColour).toList();
-        List<DieColour> finalDiceColours = Stream.concat(finalCupDiceColours.stream(), finalTableDiceColours.stream()).toList();
-        List<DieColour> initialDiceColours = Arrays.stream(STANDARD_SET).map(Die::getColour).toList();
-        assertEquals(initialDiceColours.stream().sorted().toList(), finalDiceColours.stream().sorted().toList());
+        List<DieColour> finalCupDiceColours = finalGameState.diceInCup().stream().map(Die::getColour).toList();
+        List<DieColour> finalTableDiceColours = finalGameState.diceOnTable().stream().map(Die::getColour).toList();
+        List<DieColour> finalDiceColours = Stream.concat(finalCupDiceColours.stream(), finalTableDiceColours.stream()).sorted().toList();
+        List<DieColour> initialDiceColours = STANDARD_SET.stream().map(Die::getColour).sorted().toList();
+        assertEquals(initialDiceColours, finalDiceColours);
     }
 
     @RepeatedTest(testRepeats)
@@ -61,21 +59,21 @@ public class GameRunnerTest {
     void finalGameStateHasAtLeastThreeDiceOnTable() {
         GameState finalGameState = runner.runGame();
 
-        assertTrue(finalGameState.diceOnTable().length >= 3);
+        assertTrue(finalGameState.diceOnTable().size() >= 3);
     }
 
     @RepeatedTest(testRepeats)
     void finalGameStateHasAtLeastOneBrainOnTable() {
         GameState finalGameState = runner.runGame();
 
-        assertTrue(Arrays.stream(finalGameState.diceOnTable()).anyMatch(die -> die.getCurrentFace().equals(Optional.of(BRAIN))));
+        assertTrue(finalGameState.diceOnTable().stream().anyMatch(die -> die.getCurrentFace().equals(Optional.of(BRAIN))));
     }
 
     @RepeatedTest(testRepeats)
     void finalGameStateDoesNotHaveThreeBlastsOnTableUnlessWinningScore() {
         GameState finalGameState = runner.runGame();
 
-        int blastsOnTable = (int) Arrays.stream(finalGameState.diceOnTable()).filter(die -> die.getCurrentFace().equals(Optional.of(BLAST))).count();
+        int blastsOnTable = (int) finalGameState.diceOnTable().stream().filter(die -> die.getCurrentFace().equals(Optional.of(BLAST))).count();
         int currentPlayerScore = finalGameState.playerScores().get(finalGameState.currentPlayer());
 
         // Player may have three blasts on table as long as also winning on that roll

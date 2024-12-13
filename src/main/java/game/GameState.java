@@ -3,21 +3,22 @@ package game;
 import dice.Die;
 import players.Player;
 
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static game.GameOperations.getRandomPlayer;
 
-public record GameState(Die[] diceInCup, Die[] diceOnTable, Map<Player, Integer> playerScores, Player currentPlayer, int blastsThisTurn, int brainsThisTurn) {
+public record GameState(List<Die> diceInCup, List<Die> diceOnTable, Map<Player, Integer> playerScores, Player currentPlayer, int blastsThisTurn, int brainsThisTurn) {
 
-    public static GameState makeInitialState(Player[] players, Die[] dice) {
+    public static GameState makeInitialState(List<Player> players, List<Die> dice) {
         // Initialise player scores to zero
-        Map<Player, Integer> playersAndScores = Arrays.stream(players)
-                .collect(Collectors.toMap(p -> p, p -> 0));
-        return new GameState(dice, new Die[0], playersAndScores, getRandomPlayer(players), 0, 0);
+        Map<Player, Integer> playersAndScores = players.stream().collect(Collectors.toMap(p -> p, p -> 0));
+        return new GameState(dice, List.of(), playersAndScores, getRandomPlayer(players), 0, 0);
     }
 
-    public GameState withDiceInCup(Die[] dice) {
+    public GameState withDiceInCup(List<Die> dice) {
         return new GameState(
                 dice,
                 diceOnTable,
@@ -28,7 +29,7 @@ public record GameState(Die[] diceInCup, Die[] diceOnTable, Map<Player, Integer>
         );
     }
 
-    public GameState withDiceOnTable(Die[] dice) {
+    public GameState withDiceOnTable(List<Die> dice) {
         return new GameState(
                 diceInCup,
                 dice,
@@ -87,8 +88,8 @@ public record GameState(Die[] diceInCup, Die[] diceOnTable, Map<Player, Integer>
 
     @Override
     public String toString() {
-        String diceInCupString = Arrays.stream(diceInCup()).map(Die::toString).collect(Collectors.joining(", "));
-        String diceOnTableString = Arrays.stream(diceOnTable()).map(Die::toString).collect(Collectors.joining(", "));
+        String diceInCupString = diceInCup().stream().map(Die::toString).collect(Collectors.joining(", "));
+        String diceOnTableString = diceOnTable().stream().map(Die::toString).collect(Collectors.joining(", "));
         String playerScoresString = playerScores.entrySet().stream()
                 .map((entry) -> entry.getKey().toString() + ": " + entry.getValue().toString())
                 .collect(Collectors.joining(", "));
