@@ -6,8 +6,7 @@ import players.Player;
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 
-import static dice.DieFace.BRAIN;
-import static dice.DieFace.FOOTSTEPS;
+import static dice.DieFace.*;
 
 public class GameOperations {
 
