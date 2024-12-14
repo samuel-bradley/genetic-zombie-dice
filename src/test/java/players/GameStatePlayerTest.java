@@ -8,8 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import static dice.DieColour.RED;
-import static dice.DieColour.YELLOW;
+import static dice.DieColour.*;
 import static dice.DieFace.BLAST;
 import static dice.DieFace.BRAIN;
 import static org.junit.jupiter.api.Assertions.*;
@@ -19,8 +18,8 @@ class GameStatePlayerTest {
     Die die1 = new Die(YELLOW, Optional.of(BRAIN));
     Die die2 = new Die(RED, Optional.of(BLAST));
 
-    DecisionRelevantGameState gameState1 = new DecisionRelevantGameState(List.of(die1), List.of(die2), 1, 2);
-    DecisionRelevantGameState gameState2 = new DecisionRelevantGameState(List.of(die2), List.of(die1), 2, 1);
+    DecisionRelevantGameState gameState1 = new DecisionRelevantGameState(List.of(YELLOW), List.of(die2), 1, 2);
+    DecisionRelevantGameState gameState2 = new DecisionRelevantGameState(List.of(GREEN), List.of(die1), 2, 1);
 
     Map<DecisionRelevantGameState, Boolean> gameStatesWithDecisions = Map.of(
             gameState1, true,
@@ -37,8 +36,8 @@ class GameStatePlayerTest {
 
     @Test
     void rollsAgainCorrectlyGivenEquivalentGameState() {
-        assertTrue(player.rollAgain(new DecisionRelevantGameState(List.of(die1), List.of(die2), 1, 2)));
-        assertFalse(player.rollAgain(new DecisionRelevantGameState(List.of(die2), List.of(die1), 2, 1)));
+        assertTrue(player.rollAgain(new DecisionRelevantGameState(List.of(YELLOW), List.of(die2), 1, 2)));
+        assertFalse(player.rollAgain(new DecisionRelevantGameState(List.of(GREEN), List.of(die1), 2, 1)));
     }
 
     @Test

@@ -1,13 +1,20 @@
 package game;
 
 import dice.Die;
+import dice.DieColour;
+import dice.DieFace;
 
 import java.util.List;
 
-public record DecisionRelevantGameState(List<Die> diceInCup, List<Die> diceOnTable, int blastsThisTurn, int brainsThisTurn) {
+public record DecisionRelevantGameState(List<DieColour> coloursInCup, List<Die> diceOnTable, int blastsThisTurn, int brainsThisTurn) {
 
     public static DecisionRelevantGameState fromGameState(GameState gameState) {
-        return new DecisionRelevantGameState(gameState.diceInCup(), gameState.diceOnTable(), gameState.blastsThisTurn(), gameState.brainsThisTurn());
+        return new DecisionRelevantGameState(
+                gameState.diceInCup().stream().map(Die::getColour).toList(),
+                gameState.diceOnTable(),
+                gameState.blastsThisTurn(),
+                gameState.brainsThisTurn()
+        );
     }
 
     @Override
@@ -15,7 +22,7 @@ public record DecisionRelevantGameState(List<Die> diceInCup, List<Die> diceOnTab
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         DecisionRelevantGameState that = (DecisionRelevantGameState) o;
-        return diceInCup.equals(that.diceInCup) &&
+        return coloursInCup.equals(that.coloursInCup) &&
                 diceOnTable.equals(that.diceOnTable) &&
                 blastsThisTurn == that.blastsThisTurn &&
                 brainsThisTurn == that.brainsThisTurn;
@@ -23,7 +30,7 @@ public record DecisionRelevantGameState(List<Die> diceInCup, List<Die> diceOnTab
 
     @Override
     public int hashCode() {
-        int result = diceInCup.hashCode();
+        int result = coloursInCup.hashCode();
         result = 31 * result + diceOnTable.hashCode();
         result = 31 * result + Integer.hashCode(blastsThisTurn);
         result = 31 * result + Integer.hashCode(brainsThisTurn);
