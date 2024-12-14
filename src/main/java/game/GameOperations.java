@@ -44,9 +44,7 @@ public class GameOperations {
     }
 
     public static GameState moveDiceToCup(GameState gameState, List<Die> diceToMove) {
-        diceToMove.forEach(die -> {
-            if (!gameState.diceOnTable().contains(die)) throw new IllegalArgumentException("Die " + die + " is not on the table.");
-        });
+        validateDiceInList(diceToMove, gameState.diceOnTable());
 
         // Filter out diceToMove from the table and add them to the cup
         List<Die> newDiceOnTable = gameState.diceOnTable().stream().filter(die -> !diceToMove.contains(die)).toList();
@@ -59,9 +57,7 @@ public class GameOperations {
     }
 
     public static GameState rollDiceToTable(GameState gameState, List<Die> diceToMove) {
-        diceToMove.forEach(die -> {
-            if (!gameState.diceInCup().contains(die)) throw new IllegalArgumentException("Die " + die + " is not in the cup.");
-        });
+        validateDiceInList(diceToMove, gameState.diceInCup());
 
         // Build list of rolled dice on table, tracking brains and blasts
         AtomicInteger brainsRolled = new AtomicInteger();
@@ -88,9 +84,7 @@ public class GameOperations {
     }
 
     public static GameState rollDiceOnTable(GameState gameState, List<Die> diceToRoll) {
-        diceToRoll.forEach(die -> {
-            if (!gameState.diceOnTable().contains(die)) throw new IllegalArgumentException("Die " + die + " is not on the table.");
-        });
+        validateDiceInList(diceToRoll, gameState.diceOnTable());
 
         // Build list of rolled dice on table, tracking brains and blasts
         AtomicInteger brainsRolled = new AtomicInteger();
@@ -111,12 +105,17 @@ public class GameOperations {
                 .withBlastsThisTurn(gameState.blastsThisTurn() + blastsRolled.get());
     }
 
+    private static void validateDiceInList(List<Die> dice, List<Die> list) {
+        dice.forEach(die -> {
+            if (!list.contains(die)) throw new IllegalArgumentException("Die " + die + " not in dice " + dice);
+        });
+    }
+
     private static List<Die> getRandomDice(List<Die> dice, int numberToGet) {
         if (numberToGet > dice.size())
             throw new IllegalArgumentException("Cannot get " + numberToGet + " dice from " + dice.size() + " dice");
 
         final ThreadLocalRandom random = ThreadLocalRandom.current();
-
         List<Die> shuffledDice = (new ArrayList<>(dice));
         Collections.shuffle(shuffledDice, random);
 
