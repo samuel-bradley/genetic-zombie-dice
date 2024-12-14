@@ -17,23 +17,17 @@ public class GameOperations {
     }
 
     public static GameState drawAndRollDiceFromCup(GameState gameState, int numberToDrawAndRoll) {
-        if (gameState.diceInCup().size() == numberToDrawAndRoll) {
-            // Exact number of required dice in cup - just roll these
-            return rollDiceToTable(gameState, gameState.diceInCup());
-        } else if (gameState.diceInCup().size() > numberToDrawAndRoll) {
-            // More than sufficient dice in cup - select from them randomly
-            final List<Die> diceToDraw = getRandomDice(gameState.diceInCup(), numberToDrawAndRoll);
+        if (gameState.diceInCup().size() >= numberToDrawAndRoll) {
+            List<Die> diceToDraw = getRandomDice(gameState.diceInCup(), numberToDrawAndRoll);
             return rollDiceToTable(gameState, diceToDraw);
-        } else {
-            // Insufficient dice left in cup - first move brains from table to cup
-            final List<Die> brainsOnTable = gameState.diceOnTable().stream()
-                    .filter((die) -> die.getCurrentFace().isPresent() && die.getCurrentFace().get() == BRAIN)
-                    .toList();
-            final GameState withBrainsInCup = moveDiceToCup(gameState, brainsOnTable);
-            // Now roll dice randomly from the cup
-            final List<Die> diceToDraw = getRandomDice(withBrainsInCup.diceInCup(), numberToDrawAndRoll);
-            return rollDiceToTable(withBrainsInCup, diceToDraw);
         }
+        // Insufficient dice in cup; move brains from table to cup first
+        List<Die> brainsOnTable = gameState.diceOnTable().stream()
+                .filter(die -> die.getCurrentFace().filter(face -> face == BRAIN).isPresent())
+                .toList();
+        gameState = moveDiceToCup(gameState, brainsOnTable);
+        List<Die> diceToDraw = getRandomDice(gameState.diceInCup(), numberToDrawAndRoll);
+        return rollDiceToTable(gameState, diceToDraw);
     }
 
     public static GameState rollFootprintsFromTable(GameState gameState, int numberToRoll) {
