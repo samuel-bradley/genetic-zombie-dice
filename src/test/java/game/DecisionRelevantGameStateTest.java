@@ -1,8 +1,7 @@
 package game;
 
 import dice.Die;
-import dice.DieColour;
-import dice.DieFace;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import players.Player;
 import players.RandomPlayer;
@@ -10,6 +9,7 @@ import players.RandomPlayer;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 import static dice.DieColour.*;
 import static dice.DieFace.*;
@@ -53,4 +53,39 @@ class DecisionRelevantGameStateTest {
         DecisionRelevantGameState state3 = new DecisionRelevantGameState(List.of(RED, GREEN, YELLOW), List.of(die1, die3), 2, 3);
         assertNotEquals(state1, state3);
     }
+
+    @Nested
+    class StatesGenerationTests {
+
+        @Test
+        void generatesCorrectNumberOfStates() {
+            Set<DecisionRelevantGameState> generatedStates = DecisionRelevantGameState.generateAllStates(List.of(unrolledDie1, unrolledDie2), 1, 1);
+
+            // Calculate the expected number of states
+            int numDice = 2;
+            int numDieStates = 4; // In cup, or one of three faces on table = 1 + 3
+            int numDiceStates = (int) Math.pow(numDieStates, numDice); // Die states are independent so multiply them together
+            int numBrains = 2; // Brains range from 0 to 1 in this test
+            int numBlasts = 2; // Blasts range from 0 to 1 in this test
+            int expectedNumberOfStates = numDiceStates * numBlasts * numBrains; // 64
+
+            assertEquals(expectedNumberOfStates, generatedStates.size());
+        }
+
+        @Test
+        void testStateCountsForSpecificCupConfiguration() {
+            final Die unrolledDie1 = new Die(RED, Optional.empty());
+            final Die unrolledDie2 = new Die(GREEN, Optional.empty());
+            Set<DecisionRelevantGameState> generatedStates = DecisionRelevantGameState.generateAllStates(List.of(unrolledDie1, unrolledDie2), 2, 2);
+
+            // Filter states where the cup has [RED, GREEN] (both dice)
+            long matchingStates = generatedStates.stream().filter(state -> state.coloursInCup().equals(List.of(RED, GREEN))).count();
+
+            // Expect states for all permutations of brains and blasts
+            int expectedStates = 9; // Blasts (0-2) × brains (0-2)
+            assertEquals(expectedStates, matchingStates);
+        }
+
+    }
+
 }
