@@ -2,16 +2,21 @@ package game;
 
 import dice.Die;
 import dice.DieColour;
-import dice.DieFace;
 
 import java.util.*;
 
-public record DecisionRelevantGameState(List<DieColour> coloursInCup, List<Die> diceOnTable, int blastsThisTurn, int brainsThisTurn) {
+import static dice.DieFace.FOOTSTEPS;
+
+public record DecisionRelevantGameState(List<DieColour> coloursInCup, List<DieColour> footstepsColours, int blastsThisTurn, int brainsThisTurn) {
 
     public static DecisionRelevantGameState fromGameState(GameState gameState) {
+        List<DieColour> footstepsColours = gameState.diceOnTable().stream()
+                .filter(die -> die.getCurrentFace().equals(Optional.of(FOOTSTEPS)))
+                .map(Die::getColour)
+                .toList();
         return new DecisionRelevantGameState(
                 gameState.diceInCup().stream().map(Die::getColour).toList(),
-                gameState.diceOnTable(),
+                footstepsColours,
                 gameState.blastsThisTurn(),
                 gameState.brainsThisTurn()
         );
@@ -23,7 +28,7 @@ public record DecisionRelevantGameState(List<DieColour> coloursInCup, List<Die> 
         if (o == null || getClass() != o.getClass()) return false;
         DecisionRelevantGameState that = (DecisionRelevantGameState) o;
         return coloursInCup.equals(that.coloursInCup) &&
-                diceOnTable.equals(that.diceOnTable) &&
+                footstepsColours.equals(that.footstepsColours) &&
                 blastsThisTurn == that.blastsThisTurn &&
                 brainsThisTurn == that.brainsThisTurn;
     }
@@ -31,89 +36,71 @@ public record DecisionRelevantGameState(List<DieColour> coloursInCup, List<Die> 
     @Override
     public int hashCode() {
         int result = coloursInCup.hashCode();
-        result = 31 * result + diceOnTable.hashCode();
+        result = 31 * result + footstepsColours.hashCode();
         result = 31 * result + Integer.hashCode(blastsThisTurn);
         result = 31 * result + Integer.hashCode(brainsThisTurn);
         return result;
     }
 
     public static Set<DecisionRelevantGameState> generateAllStates(List<Die> dice, int maxBrainsThisTurn, int maxBlastsThisTurn) {
-        // Generate all combinations of dice in the cup
-        List<List<Die>> cupCombinations = generateSubsets(dice);
-
-        // Generate all combinations of these with max blasts and brains this turn
         Set<DecisionRelevantGameState> states = new HashSet<>();
-        for (List<Die> diceInCup : cupCombinations) {
-            // Calculate the complementary set for the table
-            List<Die> diceOnTable = new ArrayList<>(dice);
-            diceOnTable.removeAll(diceInCup);
 
-            // Generate all face permutations for the dice on the table
-            List<List<DieFace>> facePermutations = generateFacePermutations(diceOnTable.size());
+        // Generate all possible allocations of dice into three categories:
+        // - In cup
+        // - On table with footprints
+        // - On table with other faces
+        List<int[]> allocations = generateDiceAllocations(dice.size());
 
-            for (List<DieFace> faces : facePermutations) {
-                // Assign faces to the dice on the table
-                List<Die> tableWithFaces = new ArrayList<>();
-                for (int i = 0; i < diceOnTable.size(); i++) {
-                    Die die = diceOnTable.get(i);
-                    tableWithFaces.add(new Die(die.getColour(), Optional.of(faces.get(i))));
+        for (int[] allocation : allocations) {
+            List<Die> diceInCup = new ArrayList<>();
+            List<Die> footstepsDice = new ArrayList<>();
+
+            for (int i = 0; i < allocation.length; i++) {
+                if (allocation[i] == 0) {
+                    diceInCup.add(dice.get(i));
+                } else if (allocation[i] == 1) {
+                    footstepsDice.add(dice.get(i));
                 }
+                // Ignore allocation[i] == 2 (other faces)
+            }
 
-                for (int blastsThisTurn = 0; blastsThisTurn <= maxBlastsThisTurn; blastsThisTurn++) {
-                    for (int brainsThisTurn = 0; brainsThisTurn <= maxBrainsThisTurn; brainsThisTurn++) {
-                        states.add(new DecisionRelevantGameState(
-                                extractColours(diceInCup),
-                                tableWithFaces,
-                                blastsThisTurn,
-                                brainsThisTurn
-                        ));
-                    }
+            if (footstepsDice.size() > 3) continue; // Can have maximum 3 footprints on the table
+
+            for (int blastsThisTurn = 0; blastsThisTurn <= maxBlastsThisTurn; blastsThisTurn++) {
+                for (int brainsThisTurn = 0; brainsThisTurn <= maxBrainsThisTurn; brainsThisTurn++) {
+                    states.add(new DecisionRelevantGameState(
+                            extractColours(diceInCup),
+                            extractColours(footstepsDice),
+                            blastsThisTurn,
+                            brainsThisTurn
+                    ));
                 }
             }
         }
         return states;
     }
 
+    private static List<int[]> generateDiceAllocations(int numberOfDice) {
+        // Generate all valid allocations of the dice, each into three states (cup, footprints, neither)
+        List<int[]> allocations = new ArrayList<>();
+        int[] allocation = new int[numberOfDice];
+        generateDiceAllocations(allocations, allocation, 0, numberOfDice);
+        return allocations;
+    }
+
+    private static void generateDiceAllocations(List<int[]> allocations, int[] allocation, int index, int numberOfDice) {
+        if (index == numberOfDice) {
+            allocations.add(allocation.clone());
+            return;
+        }
+        for (int i = 0; i < 3; i++) { // 0: cup, 1: footprints, 2: other faces
+            allocation[index] = i;
+            generateDiceAllocations(allocations, allocation, index + 1, numberOfDice);
+        }
+    }
+
     private static List<DieColour> extractColours(List<Die> dice) {
         return dice.stream().map(Die::getColour).toList();
-    }
-
-    private static <T> List<List<T>> generateSubsets(List<T> list) {
-        List<List<T>> subsets = new ArrayList<>();
-        int n = list.size();
-        for (int i = 0; i < (1 << n); i++) { // 2^n subsets
-            List<T> subset = new ArrayList<>();
-            for (int j = 0; j < n; j++) {
-                if ((i & (1 << j)) != 0) {
-                    subset.add(list.get(j));
-                }
-            }
-            subsets.add(subset);
-        }
-        return subsets;
-    }
-
-    private static List<List<DieFace>> generateFacePermutations(int numDice) {
-        DieFace[] faces = DieFace.values();
-        List<List<DieFace>> permutations = new ArrayList<>();
-
-        int numFaces = faces.length;
-        int totalCombinations = (int) Math.pow(numFaces, numDice);
-
-        for (int i = 0; i < totalCombinations; i++) {
-            List<DieFace> permutation = new ArrayList<>();
-            int combination = i;
-
-            // Generate the combination by assigning a face to each die
-            for (int j = 0; j < numDice; j++) {
-                permutation.add(faces[combination % numFaces]);
-                combination /= numFaces;
-            }
-
-            permutations.add(permutation);
-        }
-
-        return permutations;
     }
 
 }

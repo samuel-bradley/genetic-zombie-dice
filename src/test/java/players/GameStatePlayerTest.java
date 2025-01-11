@@ -1,25 +1,20 @@
 package players;
 
-import dice.Die;
 import game.DecisionRelevantGameState;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
-import static dice.DieColour.*;
-import static dice.DieFace.BLAST;
-import static dice.DieFace.BRAIN;
+import static dice.DieColour.GREEN;
+import static dice.DieColour.RED;
+import static dice.DieColour.YELLOW;
 import static org.junit.jupiter.api.Assertions.*;
 
 class GameStatePlayerTest {
 
-    Die die1 = new Die(YELLOW, Optional.of(BRAIN));
-    Die die2 = new Die(RED, Optional.of(BLAST));
-
-    DecisionRelevantGameState gameState1 = new DecisionRelevantGameState(List.of(YELLOW), List.of(die2), 1, 2);
-    DecisionRelevantGameState gameState2 = new DecisionRelevantGameState(List.of(GREEN), List.of(die1), 2, 1);
+    DecisionRelevantGameState gameState1 = new DecisionRelevantGameState(List.of(YELLOW), List.of(RED), 1, 2);
+    DecisionRelevantGameState gameState2 = new DecisionRelevantGameState(List.of(GREEN), List.of(RED), 2, 1);
 
     Map<DecisionRelevantGameState, Boolean> gameStatesWithDecisions = Map.of(
             gameState1, true,
@@ -36,13 +31,13 @@ class GameStatePlayerTest {
 
     @Test
     void rollsAgainCorrectlyGivenEquivalentGameState() {
-        assertTrue(player.rollAgain(new DecisionRelevantGameState(List.of(YELLOW), List.of(die2), 1, 2)));
-        assertFalse(player.rollAgain(new DecisionRelevantGameState(List.of(GREEN), List.of(die1), 2, 1)));
+        assertTrue(player.rollAgain(new DecisionRelevantGameState(List.of(YELLOW), List.of(RED), 1, 2)));
+        assertFalse(player.rollAgain(new DecisionRelevantGameState(List.of(GREEN), List.of(RED), 2, 1)));
     }
 
     @Test
     void throwsExceptionGivenUnrecognisedGameState() {
-        DecisionRelevantGameState unknownState = new DecisionRelevantGameState(List.of(), List.of(), 1, 2);
+        DecisionRelevantGameState unknownState = new DecisionRelevantGameState(List.of(), List.of(RED), 1, 2);
         assertThrows(IllegalArgumentException.class, () -> player.rollAgain(unknownState));
     }
 
