@@ -16,7 +16,7 @@ public class GameStatePlayer implements Player {
     public boolean rollAgain(DecisionRelevantGameState gameState) {
         Boolean rollAgain = gameStatesWithDecisions.get(gameState);
         if (rollAgain == null) {
-            throw new IllegalArgumentException("Game state " + gameState.toString() + " not in cup");
+            throw new IllegalArgumentException("Game state " + gameState.toString() + " not in known game states");
         }
         return rollAgain;
     }
