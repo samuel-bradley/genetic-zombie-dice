@@ -16,7 +16,7 @@ public class GameRunner {
     private final List<Die> dice;
     private final TurnRunner turnRunner;
 
-    GameRunner(List<Player> players, List<Die> dice) {
+    public GameRunner(List<Player> players, List<Die> dice) {
         if (players.size() < 2) {
             throw new IllegalArgumentException("Need at least 2 players to run a game, got " + players.size());
         }

@@ -8,7 +8,7 @@ public class GameStatePlayer implements Player {
 
     private final Map<DecisionRelevantGameState, Boolean> gameStatesWithDecisions;
 
-    GameStatePlayer(Map<DecisionRelevantGameState, Boolean> gameStatesWithDecisions) {
+    public GameStatePlayer(Map<DecisionRelevantGameState, Boolean> gameStatesWithDecisions) {
         this.gameStatesWithDecisions = gameStatesWithDecisions;
     }
 

@@ -81,7 +81,7 @@ public record DecisionRelevantGameState(List<DieColour> coloursInCup, List<DieCo
                             .toList();
                     List<DieColour> footstepsColours = extractColours(footstepsDice).stream()
                             .sorted(Comparator.comparingInt(DieColour::ordinal))
-                            .toList();;
+                            .toList();
                     states.add(new DecisionRelevantGameState(
                             cupColours,
                             footstepsColours,
