@@ -3,6 +3,8 @@ package evolution;
 import io.jenetics.Chromosome;
 import io.jenetics.util.ISeq;
 
+import java.util.stream.Collectors;
+
 public class GameStateChromosome implements Chromosome<GameStateGene> {
 
     private final ISeq<GameStateGene> genes;
@@ -29,5 +31,13 @@ public class GameStateChromosome implements Chromosome<GameStateGene> {
     @Override
     public int length() {
         return genes.length();
+    }
+
+    @Override
+    public String toString() {
+        return stream().map(g -> String.format("%s - %s%n",
+                g.getGameState().toString(),
+                g.allele() ? "roll" : "stop"
+        )).collect(Collectors.joining());
     }
 }

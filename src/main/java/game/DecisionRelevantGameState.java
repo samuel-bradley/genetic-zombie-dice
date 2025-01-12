@@ -4,6 +4,7 @@ import dice.Die;
 import dice.DieColour;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static dice.DieFace.FOOTSTEPS;
 
@@ -115,6 +116,25 @@ public record DecisionRelevantGameState(List<DieColour> coloursInCup, List<DieCo
 
     private static List<DieColour> extractColours(List<Die> dice) {
         return dice.stream().map(Die::getColour).toList();
+    }
+
+    public String toString() {
+        // Turn GREEN, YELLOW, RED into G, Y, R respectively
+        String coloursInCupString = coloursInCup.stream()
+                .map(c -> c.toString().substring(0, 1))
+                .collect(Collectors.joining());
+        String footstepsColoursString = footstepsColours.stream()
+                .map(c -> c.toString().substring(0, 1))
+                .collect(Collectors.joining());
+
+        // Pad strings to same lengths for legibility (max 9 dice in cup, 3 footprints on table)
+        return String.format(
+                "cup: %-9s, footprints: %-3s, blasts: %02d, brains: %02d",
+                coloursInCupString,
+                footstepsColoursString,
+                blastsThisTurn,
+                brainsThisTurn
+        );
     }
 
 }

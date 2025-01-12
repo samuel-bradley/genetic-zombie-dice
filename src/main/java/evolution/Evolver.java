@@ -60,13 +60,7 @@ public class Evolver {
 
         // Output the best strategy
         System.out.println("Best strategy:");
-        best.chromosome().stream()
-                // TODO implement a nicer toString on gene/chromosome
-                .forEach(g -> System.out.printf(
-                        "Game state: %s, Roll again: %s%n",
-                        g.getGameState().toString(),
-                        g.allele() ? "Yes" : "No"
-                ));
+        System.out.println(best.chromosome().toString());
         System.out.println("Total wins for best strategy: " + evaluateFitness(best));
     }
 
