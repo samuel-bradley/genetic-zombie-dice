@@ -1,15 +1,13 @@
 package game;
 
 import dice.Die;
+import dice.DieColour;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import players.Player;
 import players.RandomPlayer;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 import static dice.DieColour.*;
 import static dice.DieFace.*;
@@ -17,25 +15,28 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class DecisionRelevantGameStateTest {
 
-    final Die die1 = new Die(RED, Optional.of(BLAST));
-    final Die die2 = new Die(GREEN, Optional.of(BRAIN));
-    final Die die3 = new Die(YELLOW, Optional.of(FOOTSTEPS));
+    final Die greenBrainDie = new Die(GREEN, Optional.of(BRAIN));
+    final Die redBlastDie = new Die(RED, Optional.of(BLAST));
+    final Die greenFootstepsDie = new Die(GREEN, Optional.of(FOOTSTEPS));
+    final Die yellowFootstepsDie = new Die(YELLOW, Optional.of(FOOTSTEPS));
+    final Die redFootstepsDie = new Die(RED, Optional.of(FOOTSTEPS));
+    final Die unrolledYellowDie = new Die(YELLOW, Optional.empty());
+    final Die unrolledGreenDie = new Die(GREEN, Optional.empty());
     final Die unrolledRedDie1 = new Die(RED, Optional.empty());
     final Die unrolledRedDie2 = new Die(RED, Optional.empty());
     final Die unrolledRedDie3 = new Die(RED, Optional.empty());
-    final Die unrolledGreenDie = new Die(GREEN, Optional.empty());
     final Player player1 = new RandomPlayer();
     final Player player2 = new RandomPlayer();
 
     @Test
     void constructsFromGameState() {
         Map<Player, Integer> playerScores = Map.of(player1, 5, player2, 6);
-        GameState gameState = new GameState(List.of(unrolledRedDie1, unrolledRedDie2, unrolledGreenDie), List.of(die1, die2, die3), playerScores, player1, 2, 3);
+        GameState gameState = new GameState(List.of(unrolledYellowDie, unrolledRedDie1, unrolledGreenDie), List.of(redBlastDie, redFootstepsDie, greenBrainDie, greenFootstepsDie, yellowFootstepsDie), playerScores, player1, 2, 3);
 
         DecisionRelevantGameState decisionRelevantGameState = DecisionRelevantGameState.fromGameState(gameState);
 
-        assertIterableEquals(List.of(RED, RED, GREEN), decisionRelevantGameState.coloursInCup());
-        assertIterableEquals(List.of(YELLOW), decisionRelevantGameState.footstepsColours());
+        assertIterableEquals(List.of(GREEN, YELLOW, RED), decisionRelevantGameState.coloursInCup());
+        assertIterableEquals(List.of(GREEN, YELLOW, RED), decisionRelevantGameState.footstepsColours());
         assertEquals(2, decisionRelevantGameState.blastsThisTurn());
         assertEquals(3, decisionRelevantGameState.brainsThisTurn());
     }
@@ -111,12 +112,22 @@ class DecisionRelevantGameStateTest {
 
             // Filter states where the cup has [RED, GREEN] (both dice) and footstepsColours is empty
             long matchingStates = generatedStates.stream()
-                    .filter(state -> state.coloursInCup().equals(List.of(RED, GREEN)) && state.footstepsColours().isEmpty())
+                    .filter(state -> state.coloursInCup().equals(List.of(GREEN, RED)) && state.footstepsColours().isEmpty())
                     .count();
 
             // Expect states for all permutations of brains and blasts
             int expectedStates = 9; // Blasts (0-2) × brains (0-2)
             assertEquals(expectedStates, matchingStates);
+        }
+
+        @Test
+        void sortsColours() {
+            Set<DecisionRelevantGameState> generatedStates = DecisionRelevantGameState.generateAllStates(List.of(yellowFootstepsDie, redBlastDie, greenBrainDie), 2, 2);
+
+            generatedStates.forEach(state -> {
+                assertEquals(state.coloursInCup().stream().sorted(Comparator.comparingInt(DieColour::ordinal)).toList(), state.coloursInCup());
+                assertEquals(state.footstepsColours().stream().sorted(Comparator.comparingInt(DieColour::ordinal)).toList(), state.footstepsColours());
+            });
         }
 
     }

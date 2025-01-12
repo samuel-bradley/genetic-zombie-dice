@@ -4,9 +4,9 @@ import static dice.DieFace.*;
 
 public enum DieColour {
 
-    RED(new DieFace[]{BLAST, BLAST, BLAST, FOOTSTEPS, FOOTSTEPS, BRAIN}),
+    GREEN(new DieFace[]{BLAST, FOOTSTEPS, FOOTSTEPS, BRAIN, BRAIN, BRAIN}),
     YELLOW(new DieFace[]{BLAST, BLAST, FOOTSTEPS, FOOTSTEPS, BRAIN, BRAIN}),
-    GREEN(new DieFace[]{BLAST, FOOTSTEPS, FOOTSTEPS, BRAIN, BRAIN, BRAIN});
+    RED(new DieFace[]{BLAST, BLAST, BLAST, FOOTSTEPS, FOOTSTEPS, BRAIN});
 
     private final DieFace[] faces;
 

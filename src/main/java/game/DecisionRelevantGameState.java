@@ -10,12 +10,19 @@ import static dice.DieFace.FOOTSTEPS;
 public record DecisionRelevantGameState(List<DieColour> coloursInCup, List<DieColour> footstepsColours, int blastsThisTurn, int brainsThisTurn) {
 
     public static DecisionRelevantGameState fromGameState(GameState gameState) {
+        // Sort the colours for ease of GameState comparison
         List<DieColour> footstepsColours = gameState.diceOnTable().stream()
                 .filter(die -> die.getCurrentFace().equals(Optional.of(FOOTSTEPS)))
                 .map(Die::getColour)
+                .sorted(Comparator.comparingInt(DieColour::ordinal))
                 .toList();
+        List<DieColour> cupColours = gameState.diceInCup().stream()
+                .map(Die::getColour)
+                .sorted(Comparator.comparingInt(DieColour::ordinal))
+                .toList();
+
         return new DecisionRelevantGameState(
-                gameState.diceInCup().stream().map(Die::getColour).toList(),
+                cupColours,
                 footstepsColours,
                 gameState.blastsThisTurn(),
                 gameState.brainsThisTurn()
@@ -68,9 +75,16 @@ public record DecisionRelevantGameState(List<DieColour> coloursInCup, List<DieCo
 
             for (int blastsThisTurn = 0; blastsThisTurn <= maxBlastsThisTurn; blastsThisTurn++) {
                 for (int brainsThisTurn = 0; brainsThisTurn <= maxBrainsThisTurn; brainsThisTurn++) {
+                    // Sort the colours for ease of GameState comparison
+                    List<DieColour> cupColours = extractColours(diceInCup).stream()
+                            .sorted(Comparator.comparingInt(DieColour::ordinal))
+                            .toList();
+                    List<DieColour> footstepsColours = extractColours(footstepsDice).stream()
+                            .sorted(Comparator.comparingInt(DieColour::ordinal))
+                            .toList();;
                     states.add(new DecisionRelevantGameState(
-                            extractColours(diceInCup),
-                            extractColours(footstepsDice),
+                            cupColours,
+                            footstepsColours,
                             blastsThisTurn,
                             brainsThisTurn
                     ));
