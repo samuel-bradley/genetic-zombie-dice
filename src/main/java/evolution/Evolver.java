@@ -42,16 +42,20 @@ public class Evolver {
         Function<Genotype<GameStateGene>, Integer> fitnessFunction = Evolver::evaluateFitness;
 
         Engine<GameStateGene, Integer> engine = Engine.builder(fitnessFunction, genotypeFactory)
-                .populationSize(500)
+                .populationSize(1000)
                 .alterers(
-                        new Mutator<>(0.3),
-                        new SinglePointCrossover<>(0.3)
+                        new Mutator<>(0.03),
+                        new UniformCrossover<>(0.2)
                 )
                 .build();
 
+        EvolutionStatistics<Integer, ?> statistics = EvolutionStatistics.ofNumber();
+
         // Run the optimization
         Genotype<GameStateGene> best = engine.stream()
-                .limit(500) // Limit the number of generations
+                .limit(300) // Limit the number of generations
+                .peek(statistics)
+                .peek(r -> System.out.println(statistics))
                 .collect(EvolutionResult.toBestGenotype());
 
         // Output the best strategy
@@ -66,7 +70,7 @@ public class Evolver {
         System.out.println("Total wins for best strategy: " + evaluateFitness(best));
     }
 
-    private static int evaluateFitness(Genotype<GameStateGene> genotype) {
+    private static Integer evaluateFitness(Genotype<GameStateGene> genotype) {
         Map<DecisionRelevantGameState, Boolean> gameStateMap = genotype.chromosome().stream()
                 .collect(Collectors.toMap(
                         GameStateGene::getGameState,
@@ -79,7 +83,7 @@ public class Evolver {
         int totalWins = 0;
         int gamesRun = 0;
 
-        while (gamesRun < 500) {
+        while (gamesRun < 1000) {
             GameState finalState = gameRunner.runGame();
             if (finalState.winner().equals(Optional.of(gameStatePlayer))) ++totalWins;
             ++gamesRun;

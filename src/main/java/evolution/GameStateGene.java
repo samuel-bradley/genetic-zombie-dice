@@ -3,7 +3,7 @@ package evolution;
 import game.DecisionRelevantGameState;
 import io.jenetics.Gene;
 
-public class GameStateGene implements Gene<Boolean, GameStateGene> {
+public class GameStateGene implements Gene<Boolean, GameStateGene>, Comparable<GameStateGene> {
 
     private final DecisionRelevantGameState gameState;
     private final Boolean allele;
@@ -35,5 +35,10 @@ public class GameStateGene implements Gene<Boolean, GameStateGene> {
     @Override
     public boolean isValid() {
         return true;
+    }
+
+    @Override
+    public int compareTo(GameStateGene other) {
+        return this.allele.compareTo(other.allele);
     }
 }
