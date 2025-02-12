@@ -17,7 +17,11 @@ public record DecisionRelevantGameState(List<DieColour> coloursInCup, List<DieCo
                 .map(Die::getColour)
                 .sorted(Comparator.comparingInt(DieColour::ordinal))
                 .toList();
-        List<DieColour> cupColours = gameState.diceInCup().stream()
+
+        // If footprints == 3, collapse cup to an empty list to mirror the simplification we make when generating states
+        List<DieColour> cupColours = (footstepsColours.size() == 3)
+                ? Collections.emptyList()
+                : gameState.diceInCup().stream()
                 .map(Die::getColour)
                 .sorted(Comparator.comparingInt(DieColour::ordinal))
                 .toList();
@@ -54,9 +58,9 @@ public record DecisionRelevantGameState(List<DieColour> coloursInCup, List<DieCo
         Set<DecisionRelevantGameState> states = new HashSet<>();
 
         // Generate all possible allocations of dice into three categories:
-        // - In cup
-        // - On table with footprints
-        // - On table with other faces
+        // - 0: In cup
+        // - 1: On table with footprints
+        // - 2: On table with other faces
         List<int[]> allocations = generateDiceAllocations(dice.size());
 
         for (int[] allocation : allocations) {
@@ -74,15 +78,23 @@ public record DecisionRelevantGameState(List<DieColour> coloursInCup, List<DieCo
 
             if (footstepsDice.size() > 3) continue; // Can have maximum 3 footprints on the table
 
+            // If 3 footsteps dice on table, we don't care what's in the cup because we won't roll it
+            // Therefore let's treat all states with some configuration of 3 footsteps as equivalent in terms of the cup
+            boolean collapseCup = (footstepsDice.size() == 3);
+
+            // Pre-sort for stable comparison
+            List<DieColour> footstepsColours = extractColours(footstepsDice).stream()
+                    .sorted(Comparator.comparingInt(DieColour::ordinal))
+                    .toList();
+            List<DieColour> cupColours = (collapseCup)
+                    ? Collections.emptyList()
+                    : extractColours(diceInCup).stream()
+                    .sorted(Comparator.comparingInt(DieColour::ordinal))
+                    .toList();
+
+            // Create states for all possible blasts/brains combos
             for (int blastsThisTurn = 0; blastsThisTurn <= maxBlastsThisTurn; blastsThisTurn++) {
                 for (int brainsThisTurn = 0; brainsThisTurn <= maxBrainsThisTurn; brainsThisTurn++) {
-                    // Sort the colours for ease of GameState comparison
-                    List<DieColour> cupColours = extractColours(diceInCup).stream()
-                            .sorted(Comparator.comparingInt(DieColour::ordinal))
-                            .toList();
-                    List<DieColour> footstepsColours = extractColours(footstepsDice).stream()
-                            .sorted(Comparator.comparingInt(DieColour::ordinal))
-                            .toList();
                     states.add(new DecisionRelevantGameState(
                             cupColours,
                             footstepsColours,

@@ -31,12 +31,12 @@ class DecisionRelevantGameStateTest {
     @Test
     void constructsFromGameState() {
         Map<Player, Integer> playerScores = Map.of(player1, 5, player2, 6);
-        GameState gameState = new GameState(List.of(unrolledYellowDie, unrolledRedDie1, unrolledGreenDie), List.of(redBlastDie, redFootstepsDie, greenBrainDie, greenFootstepsDie, yellowFootstepsDie), playerScores, player1, 2, 3);
+        GameState gameState = new GameState(List.of(unrolledYellowDie, unrolledRedDie1, unrolledGreenDie), List.of(redBlastDie, redFootstepsDie, greenBrainDie, greenFootstepsDie), playerScores, player1, 2, 3);
 
         DecisionRelevantGameState decisionRelevantGameState = DecisionRelevantGameState.fromGameState(gameState);
 
         assertIterableEquals(List.of(GREEN, YELLOW, RED), decisionRelevantGameState.coloursInCup());
-        assertIterableEquals(List.of(GREEN, YELLOW, RED), decisionRelevantGameState.footstepsColours());
+        assertIterableEquals(List.of(GREEN, RED), decisionRelevantGameState.footstepsColours());
         assertEquals(2, decisionRelevantGameState.blastsThisTurn());
         assertEquals(3, decisionRelevantGameState.brainsThisTurn());
     }
@@ -69,7 +69,7 @@ class DecisionRelevantGameStateTest {
                     List.of(unrolledRedDie1, unrolledRedDie2, unrolledRedDie3, unrolledGreenDie), 1, 1
             );
 
-            /* Possible dice states:
+            /* Possible dice states (note that states with 3 footsteps are "collapsed", with empty dice in cup representing all cup states):
                 #   R_cup   R_footprints    G_cup   G_footprints
                 1   0       0               0       0
                 2   0       0               0       1
@@ -81,29 +81,27 @@ class DecisionRelevantGameStateTest {
                 8   0       2               0       1
                 9   0       2               1       0
                 10  0       3               0       0
-                11  0       3               1       0
-                12  1       0               0       0
-                13  1       0               0       1
-                14  1       0               1       0
-                15  1       1               0       0
-                16  1       1               0       1
-                17  1       1               1       0
-                18  1       2               0       0
-                19  1       2               0       1
-                20  1       2               1       0
-                21  2       0               0       0
-                22  2       0               0       1
-                23  2       0               1       0
-                24  2       1               0       0
-                25  2       1               0       1
-                26  2       1               1       0
-                27  3       0               0       0
-                28  3       0               0       1
-                29  3       0               1       0
+                11  1       0               0       0
+                12  1       0               0       1
+                13  1       0               1       0
+                14  1       1               0       0
+                15  1       1               0       1
+                16  1       1               1       0
+                17  1       2               0       0
+                18  1       2               1       0
+                19  2       0               0       0
+                20  2       0               0       1
+                21  2       0               1       0
+                22  2       1               0       0
+                23  2       1               0       1
+                24  2       1               1       0
+                25  3       0               0       0
+                26  3       0               0       1
+                27  3       0               1       0
              */
 
-            // Blasts and blasts range from 0 to 1 in this test, so 2 each; 29 * 2 * 2 = 116
-            assertEquals(116, generatedStates.size());
+            // Blasts and blasts range from 0 to 1 in this test, so 2 each; 27 * 2 * 2 = 108
+            assertEquals(108, generatedStates.size());
         }
 
         @Test
